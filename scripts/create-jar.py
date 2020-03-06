@@ -200,7 +200,7 @@ if bin_dir is None:
 					else:
 						file_path = build_path(path, file)
 					java_files.write(uncygwin(file_path) + '\n')
-	javac_args = [javac_exec, '-Xlint:-options', '-source', '1.6', '-target', '1.6',
+	javac_args = [javac_exec, '-Xlint:-options', '--release', '10',
 				'-d', uncygwin(temp_dir), '-classpath', classpath,
 				'@' + uncygwin(java_files_path, verbose=True)]
 	before_compile = time.time()

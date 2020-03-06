@@ -3,6 +3,7 @@
 
 package com.cburch.logisim.gui.start;
 
+import java.awt.Desktop;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import com.cburch.logisim.proj.ProjectActions;
 import com.cburch.logisim.util.LocaleManager;
 import com.cburch.logisim.util.MacCompatibility;
 import com.cburch.logisim.util.StringUtil;
+import com.cburch.logisim.gui.prefs.PreferencesFrame;
 
 public class Startup {
 	private static Startup startupTemp = null;
@@ -36,7 +38,7 @@ public class Startup {
 	static void doPrint(File file) {
 		if (startupTemp != null) startupTemp.doPrintFile(file);
 	}
-	
+
 	private void doOpenFile(File file) {
 		if (initialized) {
 			ProjectActions.doOpen(null, null, file);
@@ -54,24 +56,50 @@ public class Startup {
 			filesToPrint.add(file);
 		}
 	}
-	
-	private static void registerHandler() {
+
+	private static boolean registerOldHandlers() {
 		try {
 			Class<?> needed1 = Class.forName("com.apple.eawt.Application");
-			if (needed1 == null) return;
+			if (needed1 == null) return false;
 			Class<?> needed2 = Class.forName("com.apple.eawt.ApplicationAdapter");
-			if (needed2 == null) return;
+			if (needed2 == null) return false;
 			MacOsAdapter.register();
 			MacOsAdapter.addListeners(true);
+			return true;
 		} catch (ClassNotFoundException e) {
-			return;
+
 		} catch (Throwable t) {
 			try {
 				MacOsAdapter.addListeners(false);
+				return true;
 			} catch (Throwable t2) { }
 		}
+
+		return false;
 	}
-	
+
+	private static boolean registerNewHandlers() {
+		try {
+			Desktop desktop = Desktop.getDesktop();
+			desktop.setAboutHandler(e -> About.showAboutDialog(null));
+			desktop.setQuitHandler((e, r) -> ProjectActions.doQuit(r));
+			desktop.setPreferencesHandler(e -> PreferencesFrame.showPreferences());
+			return true;
+		} catch(Throwable t) {
+			System.out.println("new handlers failed: " + t);
+		}
+
+		return false;
+	}
+
+	private static void registerHandler() {
+		if(!registerOldHandlers()) {
+			if(!registerNewHandlers()) {
+				System.out.println("couldn't register any handlers >:O");
+			}
+		}
+	}
+
 	// based on command line
 	boolean isTty;
 	private File templFile = null;
@@ -82,7 +110,7 @@ public class Startup {
 	private File loadFile;
 	private HashMap<File,File> substitutions = new HashMap<File,File>();
 	private int ttyFormat = 0;
-	
+
 	// from other sources
 	private boolean initialized = false;
 	private SplashScreen monitor = null;
@@ -92,19 +120,19 @@ public class Startup {
 		this.isTty = isTty;
 		this.showSplash = !isTty;
 	}
-	
+
 	List<File> getFilesToOpen() {
 		return filesToOpen;
 	}
-	
+
 	File getLoadFile() {
 		return loadFile;
 	}
-	
+
 	int getTtyFormat() {
 		return ttyFormat;
 	}
-	
+
 	Map<File,File> getSubstitutions() {
 		return Collections.unmodifiableMap(substitutions);
 	}
@@ -120,7 +148,7 @@ public class Startup {
 				return;
 			}
 		}
-		
+
 		// kick off the progress monitor
 		// (The values used for progress values are based on a single run where
 		// I loaded a large file.)
@@ -133,7 +161,7 @@ public class Startup {
 				showSplash = false;
 			}
 		}
-		
+
 		// pre-load the two basic component libraries, just so that the time
 		// taken is shown separately in the progress bar.
 		if (showSplash) monitor.setProgress(SplashScreen.LIBRARIES);
@@ -148,7 +176,7 @@ public class Startup {
 
 		// load in template
 		loadTemplate(templLoader, templFile, templEmpty);
-		
+
 		// now that the splash screen is almost gone, we do some last-minute
 		// interface initialization
 		if (showSplash) monitor.setProgress(SplashScreen.GUI_INIT);
@@ -165,7 +193,7 @@ public class Startup {
 		// if user has double-clicked a file to open, we'll
 		// use that as the file to open now.
 		initialized = true;
-		
+
 		// load file
 		if (filesToOpen.isEmpty()) {
 			ProjectActions.doNew(monitor, true);
@@ -220,7 +248,7 @@ public class Startup {
 			AppPreferences.setTemplateType(AppPreferences.TEMPLATE_PLAIN);
 		}
 	}
-	
+
 	public static Startup parseArgs(String[] args) {
 		// see whether we'll be using any graphics
 		boolean isTty = false;
@@ -232,24 +260,24 @@ public class Startup {
 				isClearPreferences = true;
 			}
 		}
-		
+
 		if (!isTty) {
 			// we're using the GUI: Set up the Look&Feel to match the platform
 			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Logisim");
 			System.setProperty("apple.laf.useScreenMenuBar", "true");
-			
+
 			LocaleManager.setReplaceAccents(false);
-	
+
 			// Initialize graphics acceleration if appropriate
 			AppPreferences.handleGraphicsAcceleration();
 		}
-		
+
 		Startup ret = new Startup(isTty);
 		startupTemp = ret;
 		if (!isTty) {
 			registerHandler();
 		}
-		
+
 		if (isClearPreferences) {
 			AppPreferences.clear();
 		}
