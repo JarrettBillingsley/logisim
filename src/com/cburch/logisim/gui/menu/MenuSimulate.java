@@ -77,7 +77,7 @@ class MenuSimulate extends Menu {
 			this.setText(circuit.getName());
 			addActionListener(this);
 		}
-		
+
 		void unregister() {
 			Circuit circuit = circuitState.getCircuit();
 			circuit.removeCircuitListener(this);
@@ -94,9 +94,24 @@ class MenuSimulate extends Menu {
 		}
 	}
 
-	private class MyListener implements ActionListener, SimulatorListener,
-			ChangeListener {
+	private class MyListener implements ActionListener, SimulatorListener, ChangeListener {
+		// working around a bug where check menu items will receive two
+		// ActionEvents when the accelerator is used; a spurious one with
+		// no modifiers should be ignored. see:
+		// https://bugs.openjdk.java.net/browse/JDK-8216971
+		// https://bugs.openjdk.java.net/browse/JDK-8208712
+		private boolean shouldIgnore(ActionEvent e) {
+			Object src = e.getSource();
+
+			return (src instanceof LogisimMenuItem) &&
+					((LogisimMenuItem)src).isCheck() &&
+					(e.getModifiers() == 0);
+		}
+
 		public void actionPerformed(ActionEvent e) {
+			if(shouldIgnore(e)) {
+				return;
+			}
 			Object src = e.getSource();
 			Project proj = menubar.getProject();
 			Simulator sim = proj == null ? null : proj.getSimulator();
@@ -178,7 +193,7 @@ class MenuSimulate extends Menu {
 
 	public MenuSimulate(LogisimMenuBar menubar) {
 		this.menubar = menubar;
-		
+
 		run = new MenuItemCheckImpl(this, LogisimMenuBar.SIMULATE_ENABLE);
 		step = new MenuItemImpl(this, LogisimMenuBar.SIMULATE_STEP);
 		ticksEnabled = new MenuItemCheckImpl(this, LogisimMenuBar.TICK_ENABLE);
@@ -229,7 +244,7 @@ class MenuSimulate extends Menu {
 		tickOnce.setEnabled(false);
 		ticksEnabled.setEnabled(false);
 		tickFreq.setEnabled(false);
-		
+
 		run.addChangeListener(myListener);
 		menubar.addActionListener(LogisimMenuBar.SIMULATE_ENABLE, myListener);
 		menubar.addActionListener(LogisimMenuBar.SIMULATE_STEP, myListener);
@@ -241,7 +256,7 @@ class MenuSimulate extends Menu {
 		// tickOnce.addActionListener(myListener);
 		// ticksEnabled.addActionListener(myListener);
 		log.addActionListener(myListener);
-		
+
 		computeEnabled();
 	}
 
@@ -260,7 +275,7 @@ class MenuSimulate extends Menu {
 		upStateMenu.setText(Strings.get("simulateUpStateMenu"));
 		log.setText(Strings.get("simulateLogItem"));
 	}
-	
+
 	public void setCurrentState(Simulator sim, CircuitState value) {
 		if (currentState == value) return;
 		Simulator oldSim = currentSim;
@@ -278,7 +293,7 @@ class MenuSimulate extends Menu {
 			}
 			if (cur == null) bottomState = currentState;
 		}
-		
+
 		boolean oldPresent = oldState != null;
 		boolean present = currentState != null;
 		if (oldPresent != present) {
@@ -310,7 +325,7 @@ class MenuSimulate extends Menu {
 		}
 		recreateStateMenus();
 	}
-	
+
 	private void clearItems(ArrayList<CircuitStateMenuItem> items) {
 		for (CircuitStateMenuItem item : items) {
 			item.unregister();
@@ -322,7 +337,7 @@ class MenuSimulate extends Menu {
 		recreateStateMenu(downStateMenu, downStateItems, KeyEvent.VK_RIGHT);
 		recreateStateMenu(upStateMenu, upStateItems, KeyEvent.VK_LEFT);
 	}
-	
+
 	private void recreateStateMenu(JMenu menu,
 			ArrayList<CircuitStateMenuItem> items, int code) {
 		menu.removeAll();
