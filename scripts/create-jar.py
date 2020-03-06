@@ -23,6 +23,7 @@ dest_dir = os.getcwd()
 temp_dir = None
 keep_temp = False
 jdk_dir = None
+make_jar = True
 
 # see if we're on Carl Burch's platform, and if so reconfigure defaults
 if '\\home\\burch\\' in get_svn_dir():
@@ -33,13 +34,17 @@ if '\\home\\burch\\' in get_svn_dir():
 	keep_temp = False
 
 usage = '''usage: create-jar ARGS
-arguments:  -bin DIR     compiled files are already present in DIR
-            -d DIR       place created JAR file in DIR
-            -j DIR       directory for JDK binaries (for java, javac, jar)
-            -keep        keep temporary directory after completion
-            -nodoc       omit documentation from created JAR file
-            -nosrc       omit source code from created JAR file
-            -temp DIR    use DIR as the temporary directory
+arguments:
+   -bin DIR     compiled files are already present in DIR
+   -d DIR       place created JAR file in DIR
+   -j DIR       directory for JDK binaries (for java, javac, jar)
+   -keep        keep temporary directory after completion
+   -nodoc       omit documentation from created JAR file
+   -nosrc       omit source code from created JAR file
+   -temp DIR    use DIR as the temporary directory
+   -nojar       makes a 'build' directory in the destination dir,
+                compiles into it, and does not create a jar.
+                overrides -keep, -temp, and -bin; implies -nodoc and -nosrc.
 '''.rstrip()
 
 argi = 0
@@ -52,7 +57,7 @@ while argi + 1 < len(sys.argv):
 		bin_dir = sys.argv[argi]
 	elif arg == '-d' and argi + 1 < len(sys.argv):
 		argi += 1
-		dest_dir = sys.argv[argi]
+		dest_dir = os.path.abspath(sys.argv[argi])
 	elif arg == '-j' and argi + 1 < len(sys.argv):
 		argi += 1
 		jdk_dir = sys.argv[argi]
@@ -62,6 +67,10 @@ while argi + 1 < len(sys.argv):
 		include_documentation = False
 	elif arg == '-nosrc':
 		include_source = False
+	elif arg == '-nojar':
+		make_jar = False
+		include_documentation = False
+		include_source = False
 	elif arg == '-temp' and argi + 1 < len(sys.argv):
 		argi += 1
 		temp_dir = sys.argv[argi]
@@ -69,6 +78,9 @@ while argi + 1 < len(sys.argv):
 		print_usage = True
 if print_usage:
 	sys.exit(usage)
+
+if not make_jar:
+	bin_dir = None
 
 if bin_dir is not None and not os.path.exists(bin_dir):
 	sys.exit('binary directory ' + bin_dir + ' does not exist')
@@ -104,13 +116,17 @@ if version is None or copyright is None:
 	sys.exit(-1)
 print('version ' + version + ', (c) ' + copyright)
 
-if bin_dir is None:
+if make_jar and bin_dir is None:
 	print('warning: no "-bin" argument provided - will have to compile all sources')
 
 #
 # prepare the temporary directory to be completely empty
 #
-if temp_dir is None:
+if not make_jar:
+	temp_dir = os.path.join(dest_dir, 'build')
+	if os.path.exists(temp_dir):
+		shutil.rmtree(temp_dir)
+elif temp_dir is None:
 	current = os.listdir(dest_dir)
 	for i in range(1, 11):
 		name = 'files' if i is 1 else 'files' + str(i)
@@ -133,7 +149,7 @@ os.mkdir(temp_dir)
 # directory - we set this up so this happens automatically
 old_sys_exit = sys.exit
 def fatal_error(msg=None):
-	if not keep_temp:
+	if not keep_temp and not make_jar:
 		os.chdir(dest_dir)
 		shutil.rmtree(temp_dir)
 	if msg is None:
@@ -170,6 +186,9 @@ if bin_dir is None:
 		classpath = ':'.join(classpath)
 	os.chdir(src_dir)
 	java_files_path = build_path(temp_dir, 'source_files')
+
+	print("PATH:", java_files_path)
+
 	with open(java_files_path, 'w') as java_files:
 		for path, dirs, files in os.walk('.'):
 			if '.svn' in dirs:
@@ -261,26 +280,30 @@ for macos_file in os.listdir(macos_dir):
 #
 # insert GPL, create manifest
 #
-print('creating JAR file')
-# include COPYING.TXT and manifest
-shutil.copyfile(build_path(data_dir, 'COPYING.TXT'),
-			build_path(temp_dir, 'COPYING.TXT'))
-os.mkdir(build_path(temp_dir, 'META-INF'))
-with open(build_path(temp_dir, 'META-INF/MANIFEST.MF'), 'w') as manifest:
-	manifest.write('Main-Class: com.cburch.logisim.Main\n')
-# and now create the JAR
-os.chdir(temp_dir)
-files_to_include = os.listdir('.')
-files_to_include.remove('META-INF')
-jar_filename = 'logisim-fragile-' + version + '.jar'
-jar_pathname = build_path(dest_dir, jar_filename, cygwin=False)
-system(jar_exec, 'fcm', jar_pathname, 'META-INF/MANIFEST.MF', *files_to_include)
 
-os.chdir(dest_dir)
-if not keep_temp:
-	print('deleting temporary directory')
-	shutil.rmtree(temp_dir)
-size = str(int(round(os.path.getsize(jar_pathname) / 1024.0)))
-elapse = format(time.time() - create_jar_start_time, '.1f')
-summary = 'JAR file created! (name: {name}, size: {size}KB, elapsed: {elapse}s)'
-print(summary.format(name=jar_filename, size=str(size), elapse=elapse))
+if not make_jar:
+	print('done.')
+else:
+	print('creating JAR file')
+	# include COPYING.TXT and manifest
+	shutil.copyfile(build_path(data_dir, 'COPYING.TXT'),
+				build_path(temp_dir, 'COPYING.TXT'))
+	os.mkdir(build_path(temp_dir, 'META-INF'))
+	with open(build_path(temp_dir, 'META-INF/MANIFEST.MF'), 'w') as manifest:
+		manifest.write('Main-Class: com.cburch.logisim.Main\n')
+	# and now create the JAR
+	os.chdir(temp_dir)
+	files_to_include = os.listdir('.')
+	files_to_include.remove('META-INF')
+	jar_filename = 'logisim-fragile-' + version + '.jar'
+	jar_pathname = build_path(dest_dir, jar_filename, cygwin=False)
+	system(jar_exec, 'fcm', jar_pathname, 'META-INF/MANIFEST.MF', *files_to_include)
+
+	os.chdir(dest_dir)
+	if not keep_temp:
+		print('deleting temporary directory')
+		shutil.rmtree(temp_dir)
+	size = str(int(round(os.path.getsize(jar_pathname) / 1024.0)))
+	elapse = format(time.time() - create_jar_start_time, '.1f')
+	summary = 'JAR file created! (name: {name}, size: {size}KB, elapsed: {elapse}s)'
+	print(summary.format(name=jar_filename, size=str(size), elapse=elapse))
