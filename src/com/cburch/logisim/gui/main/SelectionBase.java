@@ -27,11 +27,12 @@ import com.cburch.logisim.util.CollectionUtil;
 
 class SelectionBase {
 	static final Set<Component> NO_COMPONENTS = Collections.emptySet();
-	
+
 	Project proj;
 	private ArrayList<Selection.Listener> listeners = new ArrayList<Selection.Listener>();
 
-	final HashSet<Component> selected = new HashSet<Component>(); // of selected Components in circuit
+	 // of selected Components in circuit
+	final HashSet<Component> selected = new HashSet<Component>();
 	final HashSet<Component> lifted = new HashSet<Component>(); // of selected Components removed
 	final HashSet<Component> suppressHandles = new HashSet<Component>(); // of Components
 	final Set<Component> unionSet = CollectionUtil.createUnmodifiableSetUnion(selected, lifted);
@@ -42,7 +43,7 @@ class SelectionBase {
 	public SelectionBase(Project proj) {
 		this.proj = proj;
 	}
-	
+
 	//
 	// listener methods
 	//
@@ -91,7 +92,7 @@ class SelectionBase {
 	public boolean shouldSnap() {
 		return shouldSnap;
 	}
-	
+
 	public boolean hasConflictWhenMoved(int dx, int dy) {
 		return hasConflictTranslated(unionSet, dx, dy, false);
 	}
@@ -104,13 +105,13 @@ class SelectionBase {
 			fireSelectionChanged();
 		}
 	}
-	
+
 	public void addAll(Collection<? extends Component> comps) {
 		if (selected.addAll(comps)) {
 			fireSelectionChanged();
 		}
 	}
-	
+
 	// removes from selection - NOT from circuit
 	void remove(CircuitMutation xn, Component comp) {
 		boolean removed = selected.remove(comp);
@@ -129,7 +130,7 @@ class SelectionBase {
 			fireSelectionChanged();
 		}
 	}
-	
+
 	void dropAll(CircuitMutation xn) {
 		if (!lifted.isEmpty()) {
 			xn.addAll(lifted);
@@ -137,27 +138,27 @@ class SelectionBase {
 			lifted.clear();
 		}
 	}
-	
+
 	void clear(CircuitMutation xn) {
 		clear(xn, true);
 	}
-	
+
 	// removes all from selection - NOT from circuit
 	void clear(CircuitMutation xn, boolean dropLifted) {
 		if (selected.isEmpty() && lifted.isEmpty()) return;
-		
+
 		if (dropLifted && !lifted.isEmpty()) {
 			xn.addAll(lifted);
 		}
-		
+
 		selected.clear();
 		lifted.clear();
 		shouldSnap = false;
 		bounds = Bounds.EMPTY_BOUNDS;
-		
+
 		fireSelectionChanged();
 	}
-	
+
 	public void setSuppressHandles(Collection<Component> toSuppress) {
 		suppressHandles.clear();
 		if (toSuppress != null) suppressHandles.addAll(toSuppress);
@@ -168,15 +169,15 @@ class SelectionBase {
 		oldSelected.addAll(lifted);
 		pasteHelper(xn, oldSelected);
 	}
-	
+
 	void pasteHelper(CircuitMutation xn, Collection<Component> comps) {
 		clear(xn);
-	
+
 		Map<Component,Component> newLifted = copyComponents(comps);
 		lifted.addAll(newLifted.values());
 		fireSelectionChanged();
 	}
-	
+
 	void deleteAllHelper(CircuitMutation xn) {
 		for (Component comp : selected) {
 			xn.remove(comp);
@@ -191,7 +192,7 @@ class SelectionBase {
 		for (Map.Entry<Component,Component> entry : selectedAfter.entrySet()) {
 			xn.replace(entry.getKey(), entry.getValue());
 		}
-		
+
 		Map<Component,Component> liftedAfter = copyComponents(lifted, dx, dy);
 		lifted.clear();
 		for (Map.Entry<Component,Component> entry : liftedAfter.entrySet()) {
@@ -215,10 +216,11 @@ class SelectionBase {
 	}
 
 	private static boolean shouldSnapComponent(Component comp) {
-		Boolean shouldSnapValue = (Boolean) comp.getFactory().getFeature(ComponentFactory.SHOULD_SNAP, comp.getAttributeSet());
+		Boolean shouldSnapValue = (Boolean) comp.getFactory().getFeature(
+			ComponentFactory.SHOULD_SNAP, comp.getAttributeSet());
 		return shouldSnapValue == null ? true : shouldSnapValue.booleanValue();
 	}
-	
+
 	private boolean hasConflictTranslated(Collection<Component> components,
 			int dx, int dy, boolean selfConflicts) {
 		Circuit circuit = proj.getCurrentCircuit();
@@ -246,7 +248,7 @@ class SelectionBase {
 		}
 		return false;
 	}
-	
+
 	private static Bounds computeBounds(Collection<Component> components) {
 		if (components.isEmpty()) {
 			return Bounds.EMPTY_BOUNDS;
@@ -261,7 +263,7 @@ class SelectionBase {
 			return ret;
 		}
 	}
-	
+
 	private HashMap<Component,Component> copyComponents(Collection<Component> components) {
 		// determine translation offset where we can legally place the clipboard
 		int dx;
@@ -296,14 +298,14 @@ class SelectionBase {
 				dx *= 10;
 				dy *= 10;
 			}
-			
+
 			if (bds.getX() + dx >= 0 && bds.getY() + dy >= 0
 					&& !hasConflictTranslated(components, dx, dy, true)) {
 				return copyComponents(components, dx, dy);
 			}
 		}
 	}
-	
+
 	private HashMap<Component,Component> copyComponents(Collection<Component> components,
 			int dx, int dy) {
 		HashMap<Component,Component> ret = new HashMap<Component,Component>();
@@ -318,7 +320,7 @@ class SelectionBase {
 				newY = Canvas.snapYToGrid(newY);
 			}
 			Location newLoc = Location.create(newX, newY);
-			
+
 			Component copy = comp.getFactory().createComponent(newLoc, attrs);
 			ret.put(comp, copy);
 		}
