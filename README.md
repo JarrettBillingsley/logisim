@@ -8,6 +8,7 @@ List of things I've changed or fixed:
 	- Duplicate/paste put the copied components at the mouse cursor, where they can be placed wherever the user wants.
 	- Displays Logisim icon in taskbar on modern OSes.
 	- Now clearer when you are viewing an embedded subcircuit's state vs. the subcircuit's prototype.
+	- Added an icon in the toolbar that shows whether simulation is enabled (green triangle) or not (red square).
 - **Non-backwards-compatible changes:**
 	- Gates default to narrow with 2 inputs. (Sometimes this breaks old circuits)
 	- No more asynchronous 0 clear on registers.

@@ -13,6 +13,8 @@ import java.beans.PropertyChangeListener;
 import com.cburch.draw.toolbar.AbstractToolbarModel;
 import com.cburch.draw.toolbar.ToolbarItem;
 import com.cburch.draw.toolbar.ToolbarSeparator;
+import com.cburch.logisim.circuit.SimulatorListener;
+import com.cburch.logisim.circuit.SimulatorEvent;
 import com.cburch.logisim.comp.ComponentDrawContext;
 import com.cburch.logisim.data.AttributeEvent;
 import com.cburch.logisim.data.AttributeListener;
@@ -32,15 +34,15 @@ import java.util.List;
 class LayoutToolbarModel extends AbstractToolbarModel {
 	private class ToolItem implements ToolbarItem {
 		private Tool tool;
-		
+
 		ToolItem(Tool tool) {
 			this.tool = tool;
 		}
-		
+
 		public boolean isSelectable() {
 			return true;
 		}
-		
+
 		public void paintIcon(Component destination, Graphics g) {
 			// draw halo
 			if (tool == haloedTool && AppPreferences.ATTRIBUTE_HALO.getBoolean()) {
@@ -56,7 +58,7 @@ class LayoutToolbarModel extends AbstractToolbarModel {
 			tool.paintIcon(c, 2, 2);
 			g_copy.dispose();
 		}
-		
+
 		public String getToolTip() {
 			String ret = tool.getDescription();
 			int index = 1;
@@ -72,14 +74,53 @@ class LayoutToolbarModel extends AbstractToolbarModel {
 			}
 			return ret;
 		}
-		
+
+		public Dimension getDimension(Object orientation) {
+			return new Dimension(24, 24);
+		}
+	}
+
+	private static class SimulationItem implements ToolbarItem {
+		private static final int[] xs = new int[] { 2, 20, 2  };
+		private static final int[] ys = new int[] { 2, 11, 20 };
+
+		Project proj;
+
+		SimulationItem(Project proj) {
+			this.proj = proj;
+		}
+
+		public boolean isSelectable() {
+			return false;
+		}
+
+		public void paintIcon(Component destination, Graphics g) {
+			Dimension dim = destination.getSize();
+
+			if (proj.getSimulator().isRunning()) {
+				g.setColor(Color.GREEN);
+				g.fillPolygon(xs, ys, xs.length);
+			} else {
+				g.setColor(Color.RED);
+				g.fillRect(2, 2, 20, 20);
+			}
+		}
+
+		public String getToolTip() {
+			if (proj.getSimulator().isRunning()) {
+				return Strings.get("simulateRunningText");
+			} else {
+				return Strings.get("simulateStoppedText");
+			}
+		}
+
 		public Dimension getDimension(Object orientation) {
 			return new Dimension(24, 24);
 		}
 	}
 
 	private class MyListener implements ProjectListener, AttributeListener,
-				ToolbarData.ToolbarListener, PropertyChangeListener {
+				ToolbarData.ToolbarListener, PropertyChangeListener, SimulatorListener {
 		//
 		// ProjectListener methods
 		//
@@ -100,7 +141,7 @@ class LayoutToolbarModel extends AbstractToolbarModel {
 					data.addToolbarListener(this);
 					data.addToolAttributeListener(this);
 				}
-				buildContents();
+				buildContents(proj);
 			}
 		}
 
@@ -108,9 +149,9 @@ class LayoutToolbarModel extends AbstractToolbarModel {
 		// ToolbarListener methods
 		//
 		public void toolbarChanged() {
-			buildContents();
+			buildContents(proj);
 		}
-		
+
 		//
 		// AttributeListener methods
 		//
@@ -118,7 +159,7 @@ class LayoutToolbarModel extends AbstractToolbarModel {
 		public void attributeValueChanged(AttributeEvent e) {
 			fireToolbarAppearanceChanged();
 		}
-		
+
 		//
 		// PropertyChangeListener method
 		//
@@ -127,8 +168,17 @@ class LayoutToolbarModel extends AbstractToolbarModel {
 				fireToolbarAppearanceChanged();
 			}
 		}
+
+		//
+		// SimulatorListener method
+		//
+		public void propagationCompleted(SimulatorEvent e) {}
+		public void tickCompleted(SimulatorEvent e) {}
+		public void simulatorStateChanged(SimulatorEvent e) {
+			fireToolbarAppearanceChanged();
+		}
 	}
-		
+
 	private Frame frame;
 	private Project proj;
 	private MyListener myListener;
@@ -141,7 +191,7 @@ class LayoutToolbarModel extends AbstractToolbarModel {
 		myListener = new MyListener();
 		items = Collections.emptyList();
 		haloedTool = null;
-		buildContents();
+		buildContents(proj);
 
 		// set up listeners
 		ToolbarData data = proj.getOptions().getToolbarData();
@@ -149,13 +199,14 @@ class LayoutToolbarModel extends AbstractToolbarModel {
 		data.addToolAttributeListener(myListener);
 		AppPreferences.GATE_SHAPE.addPropertyChangeListener(myListener);
 		proj.addProjectListener(myListener);
+		proj.getSimulator().addSimulatorListener(myListener);
 	}
 
 	@Override
 	public List<ToolbarItem> getItems() {
 		return items;
 	}
-	
+
 	@Override
 	public boolean isSelected(ToolbarItem item) {
 		if (item instanceof ToolItem) {
@@ -180,8 +231,8 @@ class LayoutToolbarModel extends AbstractToolbarModel {
 			fireToolbarAppearanceChanged();
 		}
 	}
-	
-	private void buildContents() {
+
+	private void buildContents(Project proj) {
 		List<ToolbarItem> oldItems = items;
 		List<ToolbarItem> newItems = new ArrayList<ToolbarItem>();
 		int pos = -1;
@@ -199,10 +250,14 @@ class LayoutToolbarModel extends AbstractToolbarModel {
 				}
 			}
 		}
+
+		newItems.add(new ToolbarSeparator(4));
+		newItems.add(new SimulationItem(proj));
+
 		items = Collections.unmodifiableList(newItems);
 		fireToolbarContentsChanged();
 	}
-	
+
 	private static ToolbarItem findItem(List<ToolbarItem> items, Tool tool) {
 		for (ToolbarItem item : items) {
 			if (item instanceof ToolItem) {
