@@ -26,7 +26,7 @@ def uncygwin(path, verbose=False):
 			path = 'C:/cygwin' + path
 		return path
 	else:
-		return path 
+		return path
 
 def is_same_file(a, b):
 	samefile = getattr(os.path, 'samefile', None)
@@ -39,7 +39,7 @@ def is_same_file(a, b):
 
 def system(*args):
 	return os.system(' '.join(args))
-	
+
 def prompt(prompt, accept=None):
 	while True:
 		ret = input(prompt + ' ')
@@ -52,7 +52,7 @@ def determine_version_info():
 	version_line = -1
 	copyright = None
 	copyright_line = -1
-	main_name = get_svn_dir('src/com/cburch/logisim/Main.java')
+	main_name = get_svn_dir('src/com/cburch/logisim/Logisim.java')
 	with open(main_name) as main_file:
 		version_re = re.compile(r'.*VERSION = LogisimVersion.get\(([0-9, ]*)\)')
 		year_re = re.compile(r'COPYRIGHT_YEAR = ([0-9]+)')

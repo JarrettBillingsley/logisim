@@ -19,7 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
-import com.cburch.logisim.Main;
+import com.cburch.logisim.Logisim;
 import com.cburch.logisim.data.Value;
 import com.cburch.logisim.util.GraphicsUtil;
 
@@ -27,15 +27,15 @@ public class About {
 	static final int IMAGE_BORDER = 10;
 	static final int IMAGE_WIDTH = 380;
 	static final int IMAGE_HEIGHT = 284;
-	
+
 	private static class PanelThread extends Thread {
 		private MyPanel panel;
 		private boolean running = true;
-		
+
 		PanelThread(MyPanel panel) {
 			this.panel = panel;
 		}
-		
+
 		@Override
 		public void run() {
 			long start = System.currentTimeMillis();
@@ -52,7 +52,7 @@ public class About {
 			}
 		}
 	}
-	
+
 	private static class MyPanel extends JPanel implements AncestorListener {
 		private final Color fadeColor = new Color(255, 255, 255, 128);
 		private final Color headerColor = new Color(143, 0, 0);
@@ -60,7 +60,7 @@ public class About {
 		private final Font headerFont = new Font("Monospaced", Font.BOLD, 72);
 		private final Font versionFont = new Font("Serif", Font.PLAIN | Font.ITALIC, 32);
 		private final Font copyrightFont = new Font("Serif", Font.ITALIC, 18);
-		
+
 		private Value upper = Value.FALSE;
 		private Value lower = Value.TRUE;
 		private AboutCredits credits;
@@ -68,13 +68,13 @@ public class About {
 
 		public MyPanel() {
 			setLayout(null);
-			
+
 			int prefWidth = IMAGE_WIDTH + 2 * IMAGE_BORDER;
 			int prefHeight = IMAGE_HEIGHT + 2 * IMAGE_BORDER;
 			setPreferredSize(new Dimension(prefWidth, prefHeight));
 			setBackground(Color.WHITE);
 			addAncestorListener(this);
-			
+
 			credits = new AboutCredits();
 			credits.setBounds(0, prefHeight / 2, prefWidth, prefHeight / 2);
 			add(credits);
@@ -83,7 +83,7 @@ public class About {
 		@Override
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
-			
+
 			try {
 				int x = IMAGE_BORDER;
 				int y = IMAGE_BORDER;
@@ -93,7 +93,7 @@ public class About {
 				drawText(g, x, y);
 			} catch (Throwable t) { }
 		}
-		
+
 		private void drawCircuit(Graphics g, int x0, int y0) {
 			if (g instanceof Graphics2D) {
 				Graphics2D g2 = (Graphics2D) g;
@@ -116,7 +116,7 @@ public class About {
 			Value out = upperAnd.or(lowerAnd);
 			int x;
 			int y;
-			
+
 			g.setColor(upper.getColor());
 			x = toX(x0, 20);
 			y = toY(y0, 10);
@@ -128,7 +128,7 @@ public class About {
 			g.setColor(upperNot.getColor());
 			y = toY(y0, 10);
 			g.drawLine(toX(x0, 70), y, toX(x0, 80), y);
-			
+
 			g.setColor(lower.getColor());
 			x = toX(x0, 30);
 			y = toY(y0, 110);
@@ -140,7 +140,7 @@ public class About {
 			g.setColor(lowerNot.getColor());
 			y = toY(y0, 110);
 			g.drawLine(toX(x0, 70), y, toX(x0, 80), y);
-			
+
 			g.setColor(upperAnd.getColor());
 			x = toX(x0, 150);
 			y = toY(y0, 30);
@@ -154,12 +154,12 @@ public class About {
 			g.drawLine(x, y, x, toY(y0, 75));
 			y = toY(y0, 75);
 			g.drawLine(x, y, toX(x0, 174), y);
-			
+
 			g.setColor(out.getColor());
 			y = toY(y0, 60);
 			g.drawLine(toX(x0, 220), y, toX(x0, 240), y);
 		}
-		
+
 		private void drawNot(Graphics g, int x0, int y0, int x, int y) {
 			int[] xp = new int[4];
 			int[] yp = new int[4];
@@ -171,7 +171,7 @@ public class About {
 			int diam = toDim(10);
 			g.drawOval(xp[0], yp[0] - diam / 2, diam, diam);
 		}
-		
+
 		private void drawAnd(Graphics g, int x0, int y0, int x, int y) {
 			int[] xp = new int[4];
 			int[] yp = new int[4];
@@ -183,7 +183,7 @@ public class About {
 			g.drawArc(xp[1], yp[1], diam, diam, -90, 180);
 			g.drawPolyline(xp, yp, 4);
 		}
-		
+
 		private void drawOr(Graphics g, int x0, int y0, int x, int y) {
 			int cx = toX(x0, x - 50);
 			int cd = toDim(62);
@@ -195,27 +195,27 @@ public class About {
 		private static int toX(int x0, int offs) {
 			return x0 + offs * 3 / 2;
 		}
-		
+
 		private static int toY(int y0, int offs) {
 			return y0 + offs * 3 / 2;
 		}
-		
+
 		private static int toDim(int offs) {
 			return offs * 3 / 2;
 		}
-			
+
 		private void drawText(Graphics g, int x, int y) {
 			FontMetrics fm;
 			String str;
-			
+
 			g.setColor(headerColor);
 			g.setFont(headerFont);
 			g.drawString("Logisim", x, y + 45);
 			g.setFont(copyrightFont); fm = g.getFontMetrics();
-			str = "\u00a9 " + Main.COPYRIGHT_YEAR;
+			str = "\u00a9 " + Logisim.COPYRIGHT_YEAR;
 			g.drawString(str, x + IMAGE_WIDTH - fm.stringWidth(str), y + 16);
 			g.setFont(versionFont); fm = g.getFontMetrics();
-			str = "Version " + Main.VERSION_NAME;
+			str = "Version " + Logisim.VERSION_NAME;
 			g.drawString(str, x + IMAGE_WIDTH - fm.stringWidth(str), y + 75);
 		}
 
@@ -248,6 +248,6 @@ public class About {
 		panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 
 		JOptionPane.showMessageDialog(owner, panel,
-				"Logisim " + Main.VERSION_NAME, JOptionPane.PLAIN_MESSAGE);
+				"Logisim " + Logisim.VERSION_NAME, JOptionPane.PLAIN_MESSAGE);
 	}
 }

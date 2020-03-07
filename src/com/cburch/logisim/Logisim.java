@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2011, Carl Burch.
- * 
+ *
  * This file is part of the Logisim source code. The latest
  * version is available at http://www.cburch.com/logisim/.
  *
@@ -23,7 +23,7 @@ package com.cburch.logisim;
 
 import com.cburch.logisim.gui.start.Startup;
 
-public class Main {
+public class Logisim {
 	public static final LogisimVersion VERSION = LogisimVersion.get(2, 7, 2);
 	public static final String VERSION_NAME = VERSION.toString();
 	public static final int COPYRIGHT_YEAR = 2011;

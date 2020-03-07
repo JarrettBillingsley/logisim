@@ -290,7 +290,7 @@ else:
 				build_path(temp_dir, 'COPYING.TXT'))
 	os.mkdir(build_path(temp_dir, 'META-INF'))
 	with open(build_path(temp_dir, 'META-INF/MANIFEST.MF'), 'w') as manifest:
-		manifest.write('Main-Class: com.cburch.logisim.Main\n')
+		manifest.write('Main-Class: com.cburch.logisim.Logisim\n')
 	# and now create the JAR
 	os.chdir(temp_dir)
 	files_to_include = os.listdir('.')

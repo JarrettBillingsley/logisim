@@ -1,2 +1,2 @@
 #/bin/sh
-java -cp build/ com.cburch.logisim.Main
+java -cp build/ com.cburch.logisim.Logisim

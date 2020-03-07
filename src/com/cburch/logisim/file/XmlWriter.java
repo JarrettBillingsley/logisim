@@ -25,7 +25,7 @@ import org.w3c.dom.Element;
 
 import com.cburch.draw.model.AbstractCanvasObject;
 import com.cburch.logisim.LogisimVersion;
-import com.cburch.logisim.Main;
+import com.cburch.logisim.Logisim;
 import com.cburch.logisim.circuit.Circuit;
 import com.cburch.logisim.circuit.Wire;
 import com.cburch.logisim.comp.Component;
@@ -48,7 +48,7 @@ class XmlWriter {
 		Document doc = docBuilder.newDocument();
 		XmlWriter context = new XmlWriter(file, doc, loader);
 		context.fromLogisimFile();
-		
+
 		TransformerFactory tfFactory = TransformerFactory.newInstance();
 		try {
 			tfFactory.setAttribute("indent-number", Integer.valueOf(2));
@@ -57,7 +57,7 @@ class XmlWriter {
 		tf.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 		tf.setOutputProperty(OutputKeys.INDENT, "yes");
 		try {
-			tf.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", 
+			tf.setOutputProperty("{http://xml.apache.org/xslt}indent-amount",
 					"2");
 		} catch (IllegalArgumentException e) { }
 
@@ -83,7 +83,7 @@ class XmlWriter {
 		ret.appendChild(doc.createTextNode("\nThis file is intended to be "
 				+ "loaded by Logisim (http://www.cburch.com/logisim/).\n"));
 		ret.setAttribute("version", "1.0");
-		ret.setAttribute("source", Main.VERSION_NAME);
+		ret.setAttribute("source", Logisim.VERSION_NAME);
 
 		for (Library lib : file.getLibraries()) {
 			Element elt = fromLibrary(lib);
@@ -251,7 +251,7 @@ class XmlWriter {
 	void addAttributeSetContent(Element elt, AttributeSet attrs,
 			AttributeDefaultProvider source) {
 		if (attrs == null) return;
-		LogisimVersion ver = Main.VERSION;
+		LogisimVersion ver = Logisim.VERSION;
 		if (source != null && source.isAllDefaultValues(attrs, ver)) return;
 		for (Attribute<?> attrBase : attrs.getAttributes()) {
 			@SuppressWarnings("unchecked")

@@ -14,7 +14,7 @@ import java.io.File;
 
 import javax.swing.UIManager;
 
-import com.cburch.logisim.Main;
+import com.cburch.logisim.Logisim;
 import com.cburch.logisim.file.LoadFailedException;
 import com.cburch.logisim.file.Loader;
 import com.cburch.logisim.gui.generic.LFrame;
@@ -266,6 +266,9 @@ public class Startup {
 
 		if (!isTty) {
 			// we're using the GUI: Set up the Look&Feel to match the platform
+
+			// NOTE: this method of setting the name on the menu bar no longer works in newer
+			// versions of macOS. as a result, I renamed the Main class to Logisim.
 			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Logisim");
 			System.setProperty("apple.laf.useScreenMenuBar", "true");
 
@@ -359,7 +362,7 @@ public class Startup {
 				}
 				ret.templPlain = true;
 			} else if (arg.equals("-version")) {
-				System.out.println(Main.VERSION_NAME); //OK
+				System.out.println(Logisim.VERSION_NAME); //OK
 				return null;
 			} else if (arg.equals("-gates")) {
 				i++;

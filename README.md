@@ -16,3 +16,4 @@ List of things I've changed or fixed:
 	- Exits when closing last window.
 	- Confirms save on exit, as Logisim was using an old method of detecting that which breaks on newer versions of macOS/Java.
 	- Fixed Cmd+K/Cmd+E shortcuts (they were being run twice due to a bug in Swing).
+	- Title now displays as "Logisim" instead of "Main".
