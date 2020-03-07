@@ -16,12 +16,13 @@ import com.cburch.logisim.proj.ProjectEvent;
 import com.cburch.logisim.proj.ProjectListener;
 import com.cburch.logisim.std.base.Base;
 import com.cburch.logisim.tools.Library;
+import com.cburch.logisim.tools.EditTool;
 import com.cburch.logisim.tools.Tool;
 
 public class LayoutEditHandler extends EditHandler
 		implements ProjectListener, LibraryListener, PropertyChangeListener {
 	private Frame frame;
-	
+
 	LayoutEditHandler(Frame frame) {
 		this.frame = frame;
 
@@ -37,7 +38,7 @@ public class LayoutEditHandler extends EditHandler
 		Selection sel = proj == null ? null : proj.getSelection();
 		boolean selEmpty = (sel == null ? true : sel.isEmpty());
 		boolean canChange = proj != null && proj.getLogisimFile().contains(proj.getCurrentCircuit());
-		
+
 		boolean selectAvailable = false;
 		for (Library lib : proj.getLogisimFile().getLibraries()) {
 			if (lib instanceof Base) selectAvailable = true;
@@ -57,44 +58,53 @@ public class LayoutEditHandler extends EditHandler
 		setEnabled(LogisimMenuBar.ADD_CONTROL, false);
 		setEnabled(LogisimMenuBar.REMOVE_CONTROL, false);
 	}
-	
+
 	@Override
 	public void cut() {
 		Project proj = frame.getProject();
 		Selection sel = frame.getCanvas().getSelection();
 		proj.doAction(SelectionActions.cut(sel));
 	}
-	
+
 	@Override
 	public void copy() {
 		Project proj = frame.getProject();
 		Selection sel = frame.getCanvas().getSelection();
 		proj.doAction(SelectionActions.copy(sel));
 	}
-	
+
 	@Override
 	public void paste() {
 		Project proj = frame.getProject();
 		Selection sel = frame.getCanvas().getSelection();
-		selectSelectTool(proj);
+		EditTool tool = selectSelectTool(proj);
 		Action action = SelectionActions.pasteMaybe(proj, sel);
 		if (action != null) {
 			proj.doAction(action);
+
+			if(tool != null) {
+				tool.startMoving(proj);
+			}
 		}
 	}
-	
+
 	@Override
 	public void delete() {
 		Project proj = frame.getProject();
 		Selection sel = frame.getCanvas().getSelection();
 		proj.doAction(SelectionActions.clear(sel));
 	}
-	
+
 	@Override
 	public void duplicate() {
 		Project proj = frame.getProject();
 		Selection sel = frame.getCanvas().getSelection();
+		EditTool tool = selectSelectTool(proj);
 		proj.doAction(SelectionActions.duplicate(sel));
+
+		if(tool != null) {
+			tool.startMoving(proj);
+		}
 	}
 
 	@Override
@@ -107,22 +117,22 @@ public class LayoutEditHandler extends EditHandler
 		sel.addAll(circ.getNonWires());
 		proj.repaintCanvas();
 	}
-	
+
 	@Override
 	public void raise() {
 		; // not yet supported in layout mode
 	}
-	
+
 	@Override
 	public void lower() {
 		; // not yet supported in layout mode
 	}
-	
+
 	@Override
 	public void raiseTop() {
 		; // not yet supported in layout mode
 	}
-	
+
 	@Override
 	public void lowerBottom() {
 		; // not yet supported in layout mode
@@ -132,20 +142,24 @@ public class LayoutEditHandler extends EditHandler
 	public void addControlPoint() {
 		; // not yet supported in layout mode
 	}
-	
+
 	@Override
 	public void removeControlPoint() {
 		; // not yet supported in layout mode
 	}
-	
-	private void selectSelectTool(Project proj) {
+
+	private EditTool selectSelectTool(Project proj) {
 		for (Library sub : proj.getLogisimFile().getLibraries()) {
 			if (sub instanceof Base) {
 				Base base = (Base) sub;
 				Tool tool = base.getTool("Edit Tool");
 				if (tool != null) proj.setTool(tool);
+
+				return (EditTool)tool;
 			}
 		}
+
+		return null;
 	}
 
 	public void projectChanged(ProjectEvent e) {

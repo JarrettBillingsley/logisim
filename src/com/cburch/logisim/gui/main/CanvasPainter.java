@@ -38,7 +38,7 @@ class CanvasPainter implements PropertyChangeListener {
 	private Component haloedComponent = null;
 	private Circuit haloedCircuit = null;
 	private WireSet highlightedWires = WireSet.EMPTY;
-	
+
 	CanvasPainter(Canvas canvas) {
 		this.canvas = canvas;
 		this.grid = new GridPainter(canvas);
@@ -46,14 +46,14 @@ class CanvasPainter implements PropertyChangeListener {
 		AppPreferences.PRINTER_VIEW.addPropertyChangeListener(this);
 		AppPreferences.ATTRIBUTE_HALO.addPropertyChangeListener(this);
 	}
-	
+
 	//
 	// accessor methods
 	//
 	GridPainter getGridPainter() {
 		return grid;
 	}
-	
+
 	Component getHaloedComponent() {
 		return haloedComponent;
 	}
@@ -86,7 +86,7 @@ class CanvasPainter implements PropertyChangeListener {
 			(int) Math.round(bds.getY() + h/2.0 - b/2.0),
 			(int) Math.round(a), (int) Math.round(b));
 	}
-	
+
 	public void propertyChange(PropertyChangeEvent event) {
 		if (AppPreferences.PRINTER_VIEW.isSource(event)
 				|| AppPreferences.ATTRIBUTE_HALO.isSource(event)) {
@@ -118,7 +118,7 @@ class CanvasPainter implements PropertyChangeListener {
 		drawWithUserState(g, gScaled, proj);
 		drawWidthIncompatibilityData(g, gScaled, proj);
 		Circuit circ = proj.getCurrentCircuit();
-		
+
 		CircuitState circState = proj.getCircuitState();
 		ComponentDrawContext ptContext = new ComponentDrawContext(canvas,
 				circ, circState, g, gScaled);
@@ -135,12 +135,18 @@ class CanvasPainter implements PropertyChangeListener {
 		Selection sel = proj.getSelection();
 		Set<Component> hidden;
 		Tool dragTool = canvas.getDragTool();
+		Tool tool = dragTool != null ? dragTool : proj.getTool();
+
 		if (dragTool == null) {
-			hidden = NO_COMPONENTS;
+			if (tool == null) {
+				hidden = NO_COMPONENTS;
+			} else {
+				hidden = tool.getHiddenComponents(canvas);
+			}
 		} else {
 			hidden = dragTool.getHiddenComponents(canvas);
-			if (hidden == null) hidden = NO_COMPONENTS;
 		}
+		if (hidden == null) hidden = NO_COMPONENTS;
 
 		// draw halo around component whose attributes we are viewing
 		boolean showHalo = AppPreferences.ATTRIBUTE_HALO.getBoolean();
@@ -170,7 +176,6 @@ class CanvasPainter implements PropertyChangeListener {
 		sel.draw(context, hidden);
 
 		// draw tool
-		Tool tool = dragTool != null ? dragTool : proj.getTool();
 		if (tool != null && !canvas.isPopupMenuUp()) {
 			Graphics gCopy = g.create();
 			context.setGraphics(gCopy);
@@ -178,7 +183,7 @@ class CanvasPainter implements PropertyChangeListener {
 			gCopy.dispose();
 		}
 	}
-	
+
 	private void drawWidthIncompatibilityData(Graphics base, Graphics g, Project proj) {
 		Set<WidthIncompatibilityData> exceptions;
 		exceptions = proj.getCurrentCircuit().getWidthIncompatibilityData();
