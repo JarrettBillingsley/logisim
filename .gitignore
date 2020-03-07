@@ -4,3 +4,4 @@ build/
 /*.jar
 *.pyc
 *.sublime-*
+*.circ
