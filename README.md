@@ -5,6 +5,7 @@ List of things I've changed or fixed:
 	- Tunnels can be color-coded.
 	- Plexers default to NOT having an enable input.
 	- Gates default to narrow with 2 inputs.
+	- Multi-bit wires with unknown values now display blue, instead of black.
 - **Breaking changes:**
 	- No more asynchronous 0 clear on registers.
 - **Bugfixes**:
