@@ -25,15 +25,21 @@ public class LFrame extends JFrame implements WindowClosable {
 	private static Image DEFAULT_ICON = null;
 
 	public static void setTaskbarIcon() {
-		if (Taskbar.isTaskbarSupported()) {
-			Taskbar taskbar = Taskbar.getTaskbar();
+		try {
 
-			ClassLoader loader = LFrame.class.getClassLoader();
-			URL url = loader.getResource(PATH + 128 + ".png");
-			if (url != null) {
-				taskbar.setIconImage(new ImageIcon(url).getImage());
+			if (Taskbar.isTaskbarSupported()) {
+				Taskbar taskbar = Taskbar.getTaskbar();
+
+				if (taskbar.isSupported(Taskbar.Feature.ICON_IMAGE)) {
+
+					ClassLoader loader = LFrame.class.getClassLoader();
+					URL url = loader.getResource(PATH + 128 + ".png");
+					if (url != null) {
+						taskbar.setIconImage(new ImageIcon(url).getImage());
+					}
+				}
 			}
-		}
+		} catch(Exception e) {}
 	}
 
 	public static void attachIcon(Window frame) {
