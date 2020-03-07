@@ -25,11 +25,12 @@ import com.cburch.logisim.util.GraphicsUtil;
 public class Tunnel extends InstanceFactory {
 	public static final Tunnel FACTORY = new Tunnel();
 
-	static final int MARGIN = 3;
-	static final int ARROW_MARGIN = 5;
-	static final int ARROW_DEPTH = 4;
-	static final int ARROW_MIN_WIDTH = 16;
-	static final int ARROW_MAX_WIDTH = 20;
+	static final int MARGIN = 3;            // space between text and outer border
+	static final int ARROW_MARGIN = 5;      // space from pin to label text
+	static final int ARROW_DEPTH = 4;       // space from pin to beginning of box part
+	static final int ARROW_MIN_WIDTH = 16;  // basically, minimum height of E/W facing label
+	static final int ARROW_MAX_WIDTH = 20;  // widest the arrow part of a big label will be drawn
+	static final int MIN_DIM = ARROW_MIN_WIDTH - 2 * MARGIN;
 
 	public Tunnel() {
 		super("Tunnel", Strings.getter("tunnelComponent"));
@@ -50,9 +51,12 @@ public class Tunnel extends InstanceFactory {
 		if (bds != null) {
 			return bds;
 		} else {
+			// my guess is that it does this because it has to return *something*
+			// but doesn't know what the *real* bounds are until the first time it's
+			// been drawn. so, this is just an estimate?
 			int ht = attrs.getFont().getSize();
 			int wd = ht * attrs.getLabel().length() / 2;
-			bds = computeBounds(attrs, wd, ht, "").expand(MARGIN);
+			bds = computeBounds(attrs, wd, ht);
 			attrs.setOffsetBounds(bds);
 			return bds;
 		}
@@ -70,9 +74,10 @@ public class Tunnel extends InstanceFactory {
 		Graphics g = painter.getGraphics();
 		g.setFont(attrs.getFont());
 		FontMetrics fm = g.getFontMetrics();
-		Bounds bds = computeBounds(attrs, fm.stringWidth(label),
-				fm.getAscent() + fm.getDescent(), label);
-		Bounds expanded = bds.expand(MARGIN);
+		Bounds expanded = computeBounds(
+			attrs,
+			fm.stringWidth(label),
+			fm.getAscent() + fm.getDescent());
 		if (attrs.setOffsetBounds(expanded)) {
 			Instance instance = painter.getInstance();
 			if (instance != null) instance.recomputeBounds();
@@ -137,8 +142,8 @@ public class Tunnel extends InstanceFactory {
 		GraphicsUtil.switchToWidth(g, 2);
 		g.drawPolygon(xp, yp, xp.length);
 		GraphicsUtil.drawText(g, label,
-			bds.getX() + bds.getWidth() / 2, bds.getY() + bds.getHeight() / 2,
-			GraphicsUtil.H_CENTER, GraphicsUtil.V_CENTER_OVERALL);
+			attrs.getLabelX(), attrs.getLabelY(),
+			attrs.getLabelHAlign(), attrs.getLabelVAlign());
 	}
 
 	@Override
@@ -200,27 +205,36 @@ public class Tunnel extends InstanceFactory {
 				attrs.getLabelHAlign(), attrs.getLabelVAlign());
 	}
 
-	private Bounds computeBounds(TunnelAttributes attrs, int textWidth,
-			int textHeight, String label) {
-		int x = attrs.getLabelX();
-		int y = attrs.getLabelY();
-		int halign = attrs.getLabelHAlign();
-		int valign = attrs.getLabelVAlign();
-
-		int minDim = ARROW_MIN_WIDTH - 2 * MARGIN;
-		int bw = Math.max(minDim, textWidth);
-		int bh = Math.max(minDim, textHeight);
+	private Bounds computeBounds(TunnelAttributes attrs, int textWidth, int textHeight) {
+		int bw;
+		int bh;
 		int bx;
 		int by;
-		switch (halign) {
-			case TextField.H_LEFT: bx = x; break;
-			case TextField.H_RIGHT: bx = x - bw; break;
-			default: bx = x - (bw / 2);
+		switch (attrs.getLabelHAlign()) {
+			case TextField.H_LEFT:
+				bw = ARROW_MARGIN + Math.max(MIN_DIM, textWidth) + MARGIN;
+				bx = 0;
+				break;
+			case TextField.H_RIGHT:
+				bw = ARROW_MARGIN + Math.max(MIN_DIM, textWidth) + MARGIN;
+				bx = -bw;
+				break;
+			default:
+				bw = Math.max(MIN_DIM, textWidth) + 2 * MARGIN;
+				bx = -(bw / 2);
 		}
-		switch (valign) {
-			case TextField.V_TOP: by = y; break;
-			case TextField.V_BOTTOM: by = y - bh; break;
-			default: by = y - (bh / 2);
+		switch (attrs.getLabelVAlign()) {
+			case TextField.V_TOP:
+				bh = ARROW_MARGIN + Math.max(MIN_DIM, textHeight) + MARGIN;
+				by = 0;
+				break;
+			case TextField.V_BOTTOM:
+				bh = ARROW_MARGIN + Math.max(MIN_DIM, textHeight) + MARGIN;
+				by = -bh;
+				break;
+			default:
+				bh = Math.max(MIN_DIM, textHeight) + 2 * MARGIN;
+				by = -(bh / 2);
 		}
 
 		return Bounds.create(bx, by, bw, bh);

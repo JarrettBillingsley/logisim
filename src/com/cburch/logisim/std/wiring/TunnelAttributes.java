@@ -141,35 +141,26 @@ public class TunnelAttributes extends AbstractAttributeSet {
 
 	private void configureLabel() {
 		Direction facing = this.facing;
-		int x;
-		int y;
-		int halign;
-		int valign;
-		int margin = Tunnel.ARROW_MARGIN;
 		if (facing == Direction.NORTH) {
-			x = 0;
-			y = margin;
-			halign = TextField.H_CENTER;
-			valign = TextField.V_TOP;
+			labelX      = 0;
+			labelY      = Tunnel.ARROW_MARGIN;
+			labelHAlign = TextField.H_CENTER;
+			labelVAlign = TextField.V_TOP;
 		} else if (facing == Direction.SOUTH) {
-			x = 0;
-			y = -margin;
-			halign = TextField.H_CENTER;
-			valign = TextField.V_BOTTOM;
+			labelX      = 0;
+			labelY      = -Tunnel.ARROW_MARGIN;
+			labelHAlign = TextField.H_CENTER;
+			labelVAlign = TextField.V_BOTTOM;
 		} else if (facing == Direction.EAST) {
-			x = -margin;
-			y = 0;
-			halign = TextField.H_RIGHT;
-			valign = TextField.V_CENTER_OVERALL;
+			labelX      = -Tunnel.ARROW_MARGIN;
+			labelY      = 0;
+			labelHAlign = TextField.H_RIGHT;
+			labelVAlign = TextField.V_CENTER_OVERALL;
 		} else {
-			x = margin;
-			y = 0;
-			halign = TextField.H_LEFT;
-			valign = TextField.V_CENTER_OVERALL;
+			labelX      = Tunnel.ARROW_MARGIN;
+			labelY      = 0;
+			labelHAlign = TextField.H_LEFT;
+			labelVAlign = TextField.V_CENTER_OVERALL;
 		}
-		labelX = x;
-		labelY = y;
-		labelHAlign = halign;
-		labelVAlign = valign;
 	}
 }

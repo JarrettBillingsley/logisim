@@ -7,7 +7,9 @@ List of things I've changed or fixed:
 	- Gates default to narrow with 2 inputs.
 - **Breaking changes:**
 	- No more asynchronous 0 clear on registers.
-- **Mac-specific fixes:**
+- **Bugfixes**:
+	- When duplicated, tunnels no longer stack up on themselves (they are offset like everything else).
+- **Mac-specific bugfixes:**
 	- Exits when closing last window.
 	- Confirms save on exit, as Logisim was using an old method of detecting that which breaks on newer versions of macOS/Java.
 	- Fixed Cmd+K/Cmd+E shortcuts (they were being run twice due to a bug in Swing).
