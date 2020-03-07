@@ -82,9 +82,13 @@ public class Startup {
 	private static boolean registerNewHandlers() {
 		try {
 			Desktop desktop = Desktop.getDesktop();
-			desktop.setAboutHandler(e -> About.showAboutDialog(null));
-			desktop.setQuitHandler((e, r) -> ProjectActions.doQuit(r));
-			desktop.setPreferencesHandler(e -> PreferencesFrame.showPreferences());
+
+			if(desktop.isSupported(Desktop.Action.APP_ABOUT))
+				desktop.setAboutHandler(e -> About.showAboutDialog(null));
+			if(desktop.isSupported(Desktop.Action.APP_QUIT_HANDLER))
+				desktop.setQuitHandler((e, r) -> ProjectActions.doQuit(r));
+			if(desktop.isSupported(Desktop.Action.APP_PREFERENCES))
+				desktop.setPreferencesHandler(e -> PreferencesFrame.showPreferences());
 			return true;
 		} catch(Throwable t) {
 			System.out.println("new handlers failed: " + t);
