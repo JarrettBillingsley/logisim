@@ -17,6 +17,7 @@ import javax.swing.UIManager;
 import com.cburch.logisim.Main;
 import com.cburch.logisim.file.LoadFailedException;
 import com.cburch.logisim.file.Loader;
+import com.cburch.logisim.gui.generic.LFrame;
 import com.cburch.logisim.gui.main.Print;
 import com.cburch.logisim.gui.menu.LogisimMenuBar;
 import com.cburch.logisim.gui.menu.WindowManagers;
@@ -160,6 +161,8 @@ public class Startup {
 				monitor = null;
 				showSplash = false;
 			}
+
+			LFrame.setTaskbarIcon();
 		}
 
 		// pre-load the two basic component libraries, just so that the time

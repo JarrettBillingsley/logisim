@@ -4,6 +4,7 @@
 package com.cburch.logisim.gui.generic;
 
 import java.awt.Image;
+import java.awt.Taskbar;
 import java.awt.Window;
 import java.awt.event.WindowEvent;
 import java.lang.reflect.Method;
@@ -22,7 +23,19 @@ public class LFrame extends JFrame implements WindowClosable {
 	private static List<Image> ICONS = null;
 	private static final int DEFAULT_SIZE = 48;
 	private static Image DEFAULT_ICON = null;
-	
+
+	public static void setTaskbarIcon() {
+		if (Taskbar.isTaskbarSupported()) {
+			Taskbar taskbar = Taskbar.getTaskbar();
+
+			ClassLoader loader = LFrame.class.getClassLoader();
+			URL url = loader.getResource(PATH + 128 + ".png");
+			if (url != null) {
+				taskbar.setIconImage(new ImageIcon(url).getImage());
+			}
+		}
+	}
+
 	public static void attachIcon(Window frame) {
 		if (ICONS == null) {
 			List<Image> loadedIcons = new ArrayList<Image>();
@@ -39,7 +52,7 @@ public class LFrame extends JFrame implements WindowClosable {
 			}
 			ICONS = loadedIcons;
 		}
-		
+
 		boolean success = false;
 		try {
 			if (ICONS != null && !ICONS.isEmpty()) {
@@ -48,7 +61,7 @@ public class LFrame extends JFrame implements WindowClosable {
 				success = true;
 			}
 		} catch (Exception e) { }
-		
+
 		if (!success && frame instanceof JFrame && DEFAULT_ICON != null) {
 			((JFrame) frame).setIconImage(DEFAULT_ICON);
 		}
