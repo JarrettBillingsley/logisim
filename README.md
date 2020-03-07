@@ -7,6 +7,7 @@ List of things I've changed or fixed:
 	- Multi-bit wires with unknown values now display blue, instead of black.
 	- Duplicate/paste put the copied components at the mouse cursor, where they can be placed wherever the user wants.
 	- Displays Logisim icon in taskbar on modern OSes.
+	- Now clearer when you are viewing an embedded subcircuit's state vs. the subcircuit's prototype.
 - **Non-backwards-compatible changes:**
 	- Gates default to narrow with 2 inputs. (Sometimes this breaks old circuits)
 	- No more asynchronous 0 clear on registers.

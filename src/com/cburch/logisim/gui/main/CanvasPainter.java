@@ -98,6 +98,8 @@ class CanvasPainter implements PropertyChangeListener {
 	//
 	// painting methods
 	//
+	private static final Color SUBSTATE_COLOR = new Color(0xFF, 0xFF, 0xFD);
+
 	void paintContents(Graphics g, Project proj) {
 		Rectangle clip = g.getClipBounds();
 		Dimension size = canvas.getSize();
@@ -105,7 +107,14 @@ class CanvasPainter implements PropertyChangeListener {
 		if (canvas.ifPaintDirtyReset() || clip == null) {
 			clip = new Rectangle(0, 0, size.width, size.height);
 		}
-		g.setColor(Color.white);
+		CircuitState circState = proj.getCircuitState();
+
+		if (circState.isSubstate()) {
+			g.setColor(SUBSTATE_COLOR);
+		}
+		else {
+			g.setColor(Color.white);
+		}
 		g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
 		grid.paintGrid(g);
@@ -119,7 +128,6 @@ class CanvasPainter implements PropertyChangeListener {
 		drawWidthIncompatibilityData(g, gScaled, proj);
 		Circuit circ = proj.getCurrentCircuit();
 
-		CircuitState circState = proj.getCircuitState();
 		ComponentDrawContext ptContext = new ComponentDrawContext(canvas,
 				circ, circState, g, gScaled);
 		ptContext.setHighlightedWires(highlightedWires);

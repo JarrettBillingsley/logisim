@@ -71,7 +71,7 @@ import javax.swing.event.PopupMenuListener;
 public class Canvas extends JPanel
 		implements LocaleListener, CanvasPaneContents {
 	public static final Color HALO_COLOR = new Color(192, 255, 255);
-	
+
 	private static final int BOUNDS_BUFFER = 70;
 		// pixels shown in canvas beyond outermost boundaries
 	private static final int THRESH_SIZE_UPDATE = 10;
@@ -83,7 +83,7 @@ public class Canvas extends JPanel
 
 	private static final Color TICK_RATE_COLOR = new Color(0, 0, 92, 92);
 	private static final Font TICK_RATE_FONT = new Font("serif", Font.BOLD, 12);
-	
+
 	private class MyListener
 			implements MouseInputListener, KeyListener, PopupMenuListener,
 				PropertyChangeListener {
@@ -103,7 +103,7 @@ public class Canvas extends JPanel
 				mouseDragged(e);
 				return;
 			}
-			
+
 			Tool tool = getToolFor(e);
 			if (tool != null) {
 				tool.mouseMoved(Canvas.this, getGraphics(), e);
@@ -146,7 +146,7 @@ public class Canvas extends JPanel
 			if (drag_tool != null) {
 				drag_tool.mousePressed(Canvas.this, getGraphics(), e);
 			}
-			
+
 			completeAction();
 		}
 
@@ -232,7 +232,7 @@ public class Canvas extends JPanel
 				}
 			} else if (act == ProjectEvent.ACTION_SET_TOOL) {
 				viewport.setErrorMessage(null, null);
-				
+
 				Tool t = event.getTool();
 				if (t == null)  setCursor(Cursor.getDefaultCursor());
 				else            setCursor(t.getCursor());
@@ -254,7 +254,7 @@ public class Canvas extends JPanel
 				completeAction();
 			}
 		}
-		
+
 		public void libraryChanged(LibraryEvent event) {
 			if (event.getAction() == LibraryEvent.REMOVE_TOOL) {
 				Object t = event.getData();
@@ -265,11 +265,11 @@ public class Canvas extends JPanel
 						circ = ((SubcircuitFactory) t).getSubcircuit();
 					}
 				}
-				
+
 				if (t == proj.getCurrentCircuit() && t != null) {
 					proj.setCurrentCircuit(proj.getLogisimFile().getMainCircuit());
 				}
-				
+
 				if (proj.getTool() == event.getData()) {
 					Tool next = findTool(proj.getLogisimFile().getOptions()
 										.getToolbarData().getContents());
@@ -281,7 +281,7 @@ public class Canvas extends JPanel
 					}
 					proj.setTool(next);
 				}
-				
+
 				if (circ != null) {
 					CircuitState state = getCircuitState();
 					CircuitState last = state;
@@ -295,7 +295,7 @@ public class Canvas extends JPanel
 				}
 			}
 		}
-		
+
 		private Tool findTool(List<? extends Tool> opts) {
 			Tool ret = null;
 			for (Tool o : opts) {
@@ -430,20 +430,20 @@ public class Canvas extends JPanel
 			g.drawString(speedStr, getWidth() - 10 - fm.stringWidth(speedStr),
 					getHeight() - 10);
 			*/
-			
+
 			StringGetter message = errorMessage;
 			if (message != null) {
 				g.setColor(errorColor);
 				paintString(g, message.get());
 				return;
 			}
-			
+
 			if (proj.getSimulator().isOscillating()) {
 				g.setColor(DEFAULT_ERROR_COLOR);
 				paintString(g, Strings.get("canvasOscillationError"));
 				return;
 			}
-			
+
 			if (proj.getSimulator().isExceptionEncountered()) {
 				g.setColor(DEFAULT_ERROR_COLOR);
 				paintString(g, Strings.get("canvasExceptionError"));
@@ -488,11 +488,16 @@ public class Canvas extends JPanel
 				}
 			}
 
+			if (proj.getCircuitState().isSubstate()) {
+				g.setColor(Color.BLACK);
+				paintStringTop(g, Strings.get("canvasSubstateMessage"));
+			}
+
 			GraphicsUtil.switchToWidth(g, 1);
 			g.setColor(Color.BLACK);
-			
+
 		}
-		
+
 		private void paintString(Graphics g, String msg) {
 			Font old = g.getFont();
 			g.setFont(old.deriveFont(Font.BOLD).deriveFont(18.0f));
@@ -500,6 +505,17 @@ public class Canvas extends JPanel
 			int x = (getWidth() - fm.stringWidth(msg)) / 2;
 			if (x < 0) x = 0;
 			g.drawString(msg, x, getHeight() - 23);
+			g.setFont(old);
+			return;
+		}
+
+		private void paintStringTop(Graphics g, String msg) {
+			Font old = g.getFont();
+			g.setFont(old.deriveFont(Font.ITALIC).deriveFont(18.0f));
+			FontMetrics fm = g.getFontMetrics();
+			int x = (getWidth() - fm.stringWidth(msg)) / 2;
+			if (x < 0) x = 0;
+			g.drawString(msg, x, 23);
 			g.setFont(old);
 			return;
 		}
@@ -552,11 +568,11 @@ public class Canvas extends JPanel
 		loadOptions(options);
 		paintThread.start();
 	}
-	
+
 	public void closeCanvas() {
 		paintThread.requestStop();
 	}
-	
+
 	private void loadOptions(AttributeSet options) {
 		boolean showTips = AppPreferences.COMPONENT_TIPS.getBoolean();
 		setToolTipText(showTips ? "" : null);
@@ -570,15 +586,15 @@ public class Canvas extends JPanel
 		if (inPaint) paintDirty = true;
 		else        super.repaint();
 	}
-	
+
 	public StringGetter getErrorMessage() {
 		return viewport.errorMessage;
 	}
-	
+
 	public void setErrorMessage(StringGetter message) {
 		viewport.setErrorMessage(message, null);
 	}
-	
+
 	public void setErrorMessage(StringGetter message, Color color) {
 		viewport.setErrorMessage(message, color);
 	}
@@ -597,7 +613,7 @@ public class Canvas extends JPanel
 	public Project getProject() {
 		return proj;
 	}
-	
+
 	public Selection getSelection() {
 		return selection;
 	}
@@ -605,9 +621,9 @@ public class Canvas extends JPanel
 	GridPainter getGridPainter() {
 		return painter.getGridPainter();
 	}
-	
+
 	Tool getDragTool() { return drag_tool; }
-	
+
 	boolean isPopupMenuUp() { return myListener.menu_on; }
 
 	//
@@ -617,15 +633,15 @@ public class Canvas extends JPanel
 		CanvasPane pane = canvasPane;
 		return pane == null ? 1.0 : pane.getZoomFactor();
 	}
-	
+
 	Component getHaloedComponent() {
 		return painter.getHaloedComponent();
 	}
-	
+
 	void setHaloedComponent(Circuit circ, Component comp) {
 		painter.setHaloedComponent(circ, comp);
 	}
-	
+
 	public void setHighlightedWires(WireSet value) {
 		painter.setHighlightedWires(value);
 	}
@@ -640,7 +656,7 @@ public class Canvas extends JPanel
 		menu.addPopupMenuListener(myListener);
 		menu.show(this, x, y);
 	}
-	
+
 	private void completeAction() {
 		computeSize(false);
 		// TODO for SimulatorPrototype: proj.getSimulator().releaseUserEvents();
@@ -670,7 +686,7 @@ public class Canvas extends JPanel
 		setPreferredSize(dim);
 		revalidate();
 	}
-	
+
 	private void waitForRepaintDone() {
 		synchronized(repaintLock) {
 			try {
@@ -705,7 +721,7 @@ public class Canvas extends JPanel
 			return true;
 		}
 	}
-	
+
 	private void computeViewportContents() {
 		Set<WidthIncompatibilityData> exceptions = proj.getCurrentCircuit().getWidthIncompatibilityData();
 		if (exceptions == null || exceptions.size() == 0) {
@@ -748,7 +764,7 @@ public class Canvas extends JPanel
 			}
 
 			// If none are, insert an arrow.
-			if (!isWithin) { 
+			if (!isWithin) {
 				Location p = ex.getPoint(0);
 				int x = p.getX();
 				int y = p.getY();
@@ -801,7 +817,7 @@ public class Canvas extends JPanel
 		}
 		super.repaint(x, y, width, height);
 	}
-	
+
 	@Override
 	public String getToolTipText(MouseEvent event) {
 		boolean showTips = AppPreferences.COMPONENT_TIPS.getBoolean();
@@ -843,13 +859,13 @@ public class Canvas extends JPanel
 		double zoom = getZoomFactor();
 		if (zoom != 1.0) zoomEvent(e, zoom);
 	}
-	
+
 	private void unrepairMouseEvent(MouseEvent e) {
 		double zoom = getZoomFactor();
 		if (zoom != 1.0) zoomEvent(e, 1.0 / zoom);
 	}
-	
-	private void zoomEvent(MouseEvent e, double zoom) { 
+
+	private void zoomEvent(MouseEvent e, double zoom) {
 		int oldx = e.getX();
 		int oldy = e.getY();
 		int newx = (int) Math.round(e.getX() / zoom);
@@ -867,7 +883,7 @@ public class Canvas extends JPanel
 		setOpaque(false);
 		computeSize(true);
 	}
-	
+
 	public void recomputeSize() {
 		computeSize(true);
 	}
