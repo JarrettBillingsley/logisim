@@ -94,18 +94,26 @@ class MenuSimulate extends Menu {
 		}
 	}
 
+	private static final boolean isMacOS;
+
+	static {
+		isMacOS = System.getProperty("os.name").toLowerCase().contains("mac");
+	}
+
 	private class MyListener implements ActionListener, SimulatorListener, ChangeListener {
 		// working around a bug where check menu items will receive two
 		// ActionEvents when the accelerator is used; a spurious one with
 		// no modifiers should be ignored. see:
 		// https://bugs.openjdk.java.net/browse/JDK-8216971
 		// https://bugs.openjdk.java.net/browse/JDK-8208712
+
 		private boolean shouldIgnore(ActionEvent e) {
 			Object src = e.getSource();
 
-			return (src instanceof LogisimMenuItem) &&
-					((LogisimMenuItem)src).isCheck() &&
-					(e.getModifiers() != 0);
+			return isMacOS &&
+				(src instanceof LogisimMenuItem) &&
+				((LogisimMenuItem)src).isCheck() &&
+				(e.getModifiers() != 0);
 		}
 
 		public void actionPerformed(ActionEvent e) {
