@@ -19,3 +19,7 @@ List of things I've changed or fixed:
 	- Confirms save on exit, as Logisim was using an old method of detecting that which breaks on newer versions of macOS/Java.
 	- Fixed Cmd+K/Cmd+E shortcuts (they were being run twice due to a bug in Swing).
 	- Title now displays as "Logisim" instead of "Main".
+
+Post-2204_0307:
+
+- Using arrow keys/home/end when editing labels no longer scrolls the circuit view.
