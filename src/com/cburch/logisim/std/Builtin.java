@@ -17,6 +17,8 @@ import com.cburch.logisim.std.wiring.Wiring;
 import com.cburch.logisim.tools.Library;
 import com.cburch.logisim.tools.Tool;
 
+import com.jfbillingsley.compiler.Components; // JUST FOR TESTING
+
 public class Builtin extends Library {
 	private List<Library> libraries = null;
 
@@ -29,6 +31,7 @@ public class Builtin extends Library {
 			new Arithmetic(),
 			new Memory(),
 			new Io(),
+			new Components(), // JUST FOR TESTING
 		});
 	}
 
@@ -40,7 +43,7 @@ public class Builtin extends Library {
 
 	@Override
 	public List<Tool> getTools() { return Collections.emptyList(); }
-	
+
 	@Override
 	public List<Library> getLibraries() {
 		return libraries;
