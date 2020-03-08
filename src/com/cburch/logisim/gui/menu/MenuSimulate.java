@@ -105,7 +105,7 @@ class MenuSimulate extends Menu {
 
 			return (src instanceof LogisimMenuItem) &&
 					((LogisimMenuItem)src).isCheck() &&
-					(e.getModifiers() == 0);
+					(e.getModifiers() != 0);
 		}
 
 		public void actionPerformed(ActionEvent e) {
