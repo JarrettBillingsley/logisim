@@ -23,4 +23,4 @@ List of things I've changed or fixed:
 Post-2204_0307:
 
 - Using arrow keys/home/end when editing labels no longer scrolls the circuit view.
-- ...fixed the fix for the duplicated cmd+k/e shortcuts on mac. now it works on both OSes.
+- ...fixed the fix for the duplicated cmd+k/e shortcuts on mac. now it works on both OSes, and the Simulate menu checkboxes work properly too.
