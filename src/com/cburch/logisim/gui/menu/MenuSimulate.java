@@ -95,9 +95,11 @@ class MenuSimulate extends Menu {
 	}
 
 	private static final boolean isMacOS;
+	private static final boolean isOpenJDK;
 
 	static {
 		isMacOS = System.getProperty("os.name").toLowerCase().contains("mac");
+		isOpenJDK = System.getProperty("java.vendor").toLowerCase().contains("openjdk");
 	}
 
 	private class MyListener implements ActionListener, SimulatorListener, ChangeListener {
@@ -106,11 +108,14 @@ class MenuSimulate extends Menu {
 		// no modifiers should be ignored. see:
 		// https://bugs.openjdk.java.net/browse/JDK-8216971
 		// https://bugs.openjdk.java.net/browse/JDK-8208712
+		// BUT I GUESS NEWER VERSIONS OF OPENJDK FIX THIS IDK. IT WAS BROKEN ON ORACLE SO
+		// HHHHHHHH
 
 		private boolean shouldIgnore(ActionEvent e) {
 			Object src = e.getSource();
 
 			return isMacOS &&
+				!isOpenJDK &&
 				(src instanceof LogisimMenuItem) &&
 				((LogisimMenuItem)src).isCheck() &&
 				(e.getModifiers() != 0);
