@@ -21,24 +21,20 @@ import com.cburch.logisim.util.GraphicsUtil;
 import com.cburch.logisim.util.StringUtil;
 
 class Compiler extends InstanceFactory {
-	// Graphical constants
-	static final int WIDTH = 320;
-	static final int HEIGHT = 240;
-
 	// Port constants
-	static final int DATA = 0;
-	static final int ADDR = 1;
-	static final int NUM_PORTS = 2;
+	public static final int DATA = 0;
+	public static final int ADDR = 1;
+	public static final int NUM_PORTS = 2;
 
-	static final int PORT_DELAY = 10;
+	public static final int PORT_DELAY = 10;
 
 	// Compiler-related constants
-	private static CompilerCore core = new CompilerCore2204();
-	final int ADDRESS_WIDTH;
-	final int INSTRUCTION_WIDTH;
+	public static final CompilerCore core = new CompilerCore2204();
 
-	private BitWidth inBitWidth;
-	private BitWidth outBitWidth;
+	private final int ADDRESS_WIDTH;
+	private final int INSTRUCTION_WIDTH;
+	private final BitWidth inBitWidth;
+	private final BitWidth outBitWidth;
 
 	public Compiler() {
 		super(String.format("Compiler (%s)", core.getName()));
@@ -48,11 +44,12 @@ class Compiler extends InstanceFactory {
 		inBitWidth = BitWidth.create(ADDRESS_WIDTH);
 		outBitWidth = BitWidth.create(INSTRUCTION_WIDTH);
 
-		setOffsetBounds(Bounds.create(-WIDTH, -HEIGHT/2, WIDTH, HEIGHT));
+		Bounds bds = CompilerState.createOffsetBounds();
+		setOffsetBounds(bds);
 
 		Port[] ps = new Port[NUM_PORTS];
-		ps[ADDR] = new Port(-WIDTH, 0, Port.INPUT, ADDRESS_WIDTH);
-		ps[DATA] = new Port(     0, 0, Port.OUTPUT, INSTRUCTION_WIDTH);
+		ps[ADDR] = new Port(-bds.getWidth(), 0, Port.INPUT,  ADDRESS_WIDTH);
+		ps[DATA] = new Port(              0, 0, Port.OUTPUT, INSTRUCTION_WIDTH);
 		setPorts(ps);
 
 		setInstancePoker(CompilerPoker.class);
@@ -64,7 +61,8 @@ class Compiler extends InstanceFactory {
 		MemMenu is the special popup menu for memory components. It's bound to an instance.
 		MemPoker is the poker. It has two subclasses, DataPoker and AddrPoker.
 		MemState is the instance state; it has a MemContents.
-		MemContents abstracts the pages; MemContentsSub abstracts a single page using an appropriately sized array based on the memory width.
+		MemContents abstracts the pages; MemContentsSub abstracts a single page using an
+			appropriately sized array based on the memory width.
 		Mem is the abstract base class instance factory for both RAM and ROM.
 		Rom extends Mem and returns RomAttributes.
 		RomAttributes is the ROM attribute set, and also manages popup windows and change listeners.
@@ -124,13 +122,13 @@ class Compiler extends InstanceFactory {
 		painter.drawPort(DATA);
 		painter.drawPort(ADDR);
 
-		// if(painter.getShowState()) {
-		// 	CompilerState state = CompilerState.get(painter);
-		// 	Bounds bds = painter.getBounds();
-		// 	GraphicsUtil.drawCenteredText(painter.getGraphics(),
-		// 			StringUtil.toHexString(width.getWidth(), state.getValue().toIntValue()),
-		// 			bds.getX() + bds.getWidth() / 2,
-		// 			bds.getY() + bds.getHeight() / 2);
-		// }
+		if(painter.getShowState()) {
+			CompilerState state = CompilerState.get(painter, core);
+			state.paint(painter.getGraphics(), painter.getBounds());
+		} else {
+			Bounds bds = painter.getBounds();
+			GraphicsUtil.drawCenteredText(g, "Haha who prints circuits?",
+				bds.getCenterX(), bds.getCenterY());
+		}
 	}
 }
