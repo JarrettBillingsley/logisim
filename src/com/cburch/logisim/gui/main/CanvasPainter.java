@@ -98,7 +98,7 @@ class CanvasPainter implements PropertyChangeListener {
 	//
 	// painting methods
 	//
-	private static final Color SUBSTATE_COLOR = new Color(0xFF, 0xFF, 0xFD);
+	private static final Color SUBSTATE_COLOR = new Color(0xFF, 0xF9, 0xE0);
 
 	void paintContents(Graphics g, Project proj) {
 		Rectangle clip = g.getClipBounds();
