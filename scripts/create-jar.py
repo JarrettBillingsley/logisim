@@ -129,7 +129,7 @@ if not make_jar:
 elif temp_dir is None:
 	current = os.listdir(dest_dir)
 	for i in range(1, 11):
-		name = 'files' if i is 1 else 'files' + str(i)
+		name = 'files' if i == 1 else 'files' + str(i)
 		if name not in current:
 			temp_dir = os.path.join(dest_dir, name)
 			break
