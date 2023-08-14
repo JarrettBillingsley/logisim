@@ -26,12 +26,14 @@ class SelectionList extends JList {
 		public void selectionChanged(ModelEvent event) {
 			fireContentsChanged(this, 0, getSize());
 		}
-		
+
 		public void entryAdded(ModelEvent event, Value[] values) { }
-		
+
 		public void filePropertyChanged(ModelEvent event) { }
+
+		public void logCleared(ModelEvent event) { }
 	}
-	
+
 	private class MyCellRenderer extends DefaultListCellRenderer {
 		@Override
 		public java.awt.Component getListCellRendererComponent(JList list,
@@ -48,16 +50,16 @@ class SelectionList extends JList {
 			return ret;
 		}
 	}
-	
+
 	private Selection selection;
-	
+
 	public SelectionList() {
 		selection = null;
 		setModel(new Model());
 		setCellRenderer(new MyCellRenderer());
 		setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	}
-	
+
 	public void setSelection(Selection value) {
 		if (selection != value) {
 			Model model = (Model) getModel();
@@ -67,7 +69,7 @@ class SelectionList extends JList {
 			model.selectionChanged(null);
 		}
 	}
-	
+
 	public void localeChanged() {
 		repaint();
 	}

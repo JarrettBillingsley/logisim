@@ -28,19 +28,23 @@ class FilePanel extends LogPanel {
 	private class Listener implements ActionListener, ModelListener {
 		public void selectionChanged(ModelEvent event) { }
 
+		public void logCleared(ModelEvent event) {
+			// should never happen buuuuuut
+		}
+
 		public void entryAdded(ModelEvent event, Value[] values) { }
-		
+
 		public void filePropertyChanged(ModelEvent event) {
 			Model model = getModel();
 			computeEnableItems(model);
-			
+
 			File file = model.getFile();
 			fileField.setText(file == null ? "" : file.getPath());
 			enableButton.setEnabled(file != null);
-			
+
 			headerCheckBox.setSelected(model.getFileHeader());
 		}
-		
+
 		private void computeEnableItems(Model model) {
 			if (model.isFileEnabled()) {
 				enableLabel.setText(Strings.get("fileEnabled"));
@@ -94,7 +98,7 @@ class FilePanel extends LogPanel {
 			}
 		}
 	}
-	
+
 	private Listener listener = new Listener();
 	private JLabel enableLabel = new JLabel();
 	private JButton enableButton = new JButton();
@@ -103,7 +107,7 @@ class FilePanel extends LogPanel {
 	private JButton selectButton = new JButton();
 	private JCheckBox headerCheckBox = new JCheckBox();
 	private JFileChooser chooser = JFileChoosers.create();
-	
+
 	public FilePanel(LogFrame frame) {
 		super(frame);
 
@@ -121,7 +125,7 @@ class FilePanel extends LogPanel {
 		filePanel.add(selectButton);
 		fileField.setEditable(false);
 		fileField.setEnabled(false);
-		
+
 		setLayout(new GridBagLayout());
 		gb = (GridBagLayout) getLayout();
 		gc = new GridBagConstraints();
@@ -139,7 +143,7 @@ class FilePanel extends LogPanel {
 		glue = new JPanel(); gc.weighty = 1.0; gb.setConstraints(glue, gc); add(glue); gc.weighty = 0.0;
 		gb.setConstraints(headerCheckBox, gc); add(headerCheckBox);
 		glue = new JPanel(); gc.weighty = 1.0; gb.setConstraints(glue, gc); add(glue); gc.weighty = 0.0;
-		
+
 		enableButton.addActionListener(listener);
 		selectButton.addActionListener(listener);
 		headerCheckBox.addActionListener(listener);
