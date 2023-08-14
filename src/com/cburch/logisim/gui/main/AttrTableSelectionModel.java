@@ -3,6 +3,9 @@
 
 package com.cburch.logisim.gui.main;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.cburch.logisim.circuit.Circuit;
 import com.cburch.logisim.circuit.Wire;
 import com.cburch.logisim.comp.Component;
@@ -13,6 +16,7 @@ import com.cburch.logisim.gui.generic.AttributeSetTableModel;
 import com.cburch.logisim.gui.main.AttrTableCircuitModel;
 import com.cburch.logisim.gui.main.Selection;
 import com.cburch.logisim.gui.main.Selection.Event;
+import com.cburch.logisim.instance.StdAttr;
 import com.cburch.logisim.proj.Project;
 import com.cburch.logisim.tools.SetAttributeAction;
 
@@ -20,14 +24,14 @@ class AttrTableSelectionModel extends AttributeSetTableModel
 		implements Selection.Listener {
 	private Project project;
 	private Frame frame;
-	
+
 	public AttrTableSelectionModel(Project project, Frame frame) {
 		super(frame.getCanvas().getSelection().getAttributeSet());
 		this.project = project;
 		this.frame = frame;
 		frame.getCanvas().getSelection().addListener(this);
 	}
-	
+
 	@Override
 	public String getTitle() {
 		ComponentFactory wireFactory = null;
@@ -35,7 +39,7 @@ class AttrTableSelectionModel extends AttributeSetTableModel
 		int factoryCount = 0;
 		int totalCount = 0;
 		boolean variousFound = false;
-		
+
 		Selection selection = frame.getCanvas().getSelection();
 		for (Component comp : selection.getComponents()) {
 			ComponentFactory fact = comp.getFactory();
@@ -56,7 +60,7 @@ class AttrTableSelectionModel extends AttributeSetTableModel
 				totalCount++;
 			}
 		}
-		
+
 		if (factory == null) {
 			factory = wireFactory;
 		}
@@ -83,13 +87,36 @@ class AttrTableSelectionModel extends AttributeSetTableModel
 			AttrTableCircuitModel circuitModel = new AttrTableCircuitModel(project, circuit);
 			circuitModel.setValueRequested(attr, value);
 		} else {
-			SetAttributeAction act = new SetAttributeAction(circuit,
-					Strings.getter("selectionAttributeAction"));
+			Set<Component> allComponents = new HashSet<>();
+
+			// go through selection, and add each component;
+			// for each tunnel, add all tunnels of the same name in the circuit
+			// (since we're using a set, it doesn't matter if the same component is added
+			// multiple times)
 			for (Component comp : selection.getComponents()) {
 				if (!(comp instanceof Wire)) {
-					act.set(comp, attr, value);
+					allComponents.add(comp);
+					if (comp.getFactory().getName().equals("Tunnel")) {
+						String label = comp.getAttributeSet().getValue(StdAttr.LABEL);
+
+						for (Component other : circuit.getNonWires()) {
+							if (other.getFactory().getName().equals("Tunnel") &&
+								other.getAttributeSet().getValue(StdAttr.LABEL).equals(label)) {
+								allComponents.add(other);
+							}
+						}
+					}
 				}
 			}
+
+			// finally, set up the action and do it
+			SetAttributeAction act = new SetAttributeAction(circuit,
+					Strings.getter("selectionAttributeAction"));
+
+			for (Component comp : allComponents) {
+				act.set(comp, attr, value);
+			}
+
 			project.doAction(act);
 		}
 	}
