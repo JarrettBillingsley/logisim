@@ -21,7 +21,7 @@ class PinAttributes extends ProbeAttributes {
 		});
 
 	BitWidth width = BitWidth.ONE;
-	boolean threeState = true;
+	boolean threeState = false;
 	int type = EndData.INPUT_ONLY;
 	Object pull = Pin.PULL_NONE;
 
