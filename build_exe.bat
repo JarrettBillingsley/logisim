@@ -1,8 +1,8 @@
 jpackage ^
 	--input .\jar\ ^
-	--dest .\downloads\ ^
+	--dest .\download\ ^
 	--name Logisim_2241_0827 ^
-	--icon .\src\resources\logisim\img\logisim-icon-128.png ^
+	--icon .\src\resources\logisim\img\logisim-icon-128.ico ^
 	--main-jar Logisim_2241_0827.jar ^
 	--type exe ^
 	--app-version "2.7.241" ^
