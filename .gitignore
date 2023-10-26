@@ -6,3 +6,4 @@ build/
 *.sublime-*
 *.circ
 files*/
+jar/
