@@ -112,13 +112,15 @@ class MenuSimulate extends Menu {
 		// HHHHHHHH
 
 		private boolean shouldIgnore(ActionEvent e) {
-			Object src = e.getSource();
+			/*Object src = e.getSource();
 
 			return isMacOS &&
 				!isOpenJDK &&
 				(src instanceof LogisimMenuItem) &&
 				((LogisimMenuItem)src).isCheck() &&
-				(e.getModifiers() != 0);
+				(e.getModifiers() != 0);*/
+
+			return false;
 		}
 
 		public void actionPerformed(ActionEvent e) {
