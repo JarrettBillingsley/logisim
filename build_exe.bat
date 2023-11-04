@@ -1,11 +1,11 @@
 jpackage ^
 	--input .\jar\ ^
 	--dest .\download\ ^
-	--name Logisim_2241_0827 ^
+	--name Logisim_2241_1103 ^
 	--icon .\src\resources\logisim\img\logisim-icon-128.ico ^
-	--main-jar Logisim_2241_0827.jar ^
+	--main-jar Logisim_2241_1103.jar ^
 	--type exe ^
-	--app-version "2.7.241" ^
+	--app-version "2.7.2412" ^
 	--vendor "com.jfbillingsley" ^
 	--win-menu ^
 	--win-shortcut ^

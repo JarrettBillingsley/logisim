@@ -27,9 +27,9 @@ iconutil -c icns icons.iconset/
 rm -Rf icons.iconset/
 
 # come up with some variables
-NAME=Logisim_2241_0827
-VERSION=2241_0827
-VERSION=2.7.241
+NAME=Logisim_2241_1103
+VERSION=2241_1103
+VERSION=2.7.2412
 
 # package it
 jpackage \
