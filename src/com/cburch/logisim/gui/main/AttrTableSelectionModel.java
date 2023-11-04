@@ -93,18 +93,26 @@ class AttrTableSelectionModel extends AttributeSetTableModel
 			// for each tunnel, add all tunnels of the same name in the circuit
 			// (since we're using a set, it doesn't matter if the same component is added
 			// multiple times)
-			for (Component comp : selection.getComponents()) {
-				if (!(comp instanceof Wire)) {
-					allComponents.add(comp);
-					if (comp.getFactory().getName().equals("Tunnel")) {
-						String label = comp.getAttributeSet().getValue(StdAttr.LABEL);
+			if((Object)attr == (Object)StdAttr.WIDTH) {
+				for (Component comp : selection.getComponents()) {
+					if (!(comp instanceof Wire)) {
+						allComponents.add(comp);
+						if (comp.getFactory().getName().equals("Tunnel")) {
+							String label = comp.getAttributeSet().getValue(StdAttr.LABEL);
 
-						for (Component other : circuit.getNonWires()) {
-							if (other.getFactory().getName().equals("Tunnel") &&
-								other.getAttributeSet().getValue(StdAttr.LABEL).equals(label)) {
-								allComponents.add(other);
+							for (Component other : circuit.getNonWires()) {
+								if (other.getFactory().getName().equals("Tunnel") &&
+									other.getAttributeSet().getValue(StdAttr.LABEL).equals(label)) {
+									allComponents.add(other);
+								}
 							}
 						}
+					}
+				}
+			} else {
+				for (Component comp : selection.getComponents()) {
+					if (!(comp instanceof Wire)) {
+						allComponents.add(comp);
 					}
 				}
 			}
