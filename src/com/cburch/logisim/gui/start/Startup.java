@@ -113,8 +113,10 @@ public class Startup {
 	private ArrayList<File> filesToOpen = new ArrayList<File>();
 	private boolean showSplash;
 	private File loadFile;
+	private File romLoadFile;
 	private HashMap<File,File> substitutions = new HashMap<File,File>();
 	private int ttyFormat = 0;
+	private long maxTicks = -1;
 
 	// from other sources
 	private boolean initialized = false;
@@ -132,6 +134,14 @@ public class Startup {
 
 	File getLoadFile() {
 		return loadFile;
+	}
+
+	File getRomLoadFile() {
+		return romLoadFile;
+	}
+
+	long getMaxTicks() {
+		return maxTicks;
 	}
 
 	int getTtyFormat() {
@@ -353,6 +363,38 @@ public class Startup {
 					System.err.println(Strings.get("loadNeedsFileError")); //OK
 					return null;
 				}
+			} else if (arg.equals("-loadrom")) {
+				if (i + 1 < args.length) {
+					i++;
+					if (ret.romLoadFile != null) {
+						System.err.println(Strings.get("loadRomMultipleError")); //OK
+					}
+					File f = new File(args[i]);
+					ret.romLoadFile = f;
+				} else {
+					System.err.println(Strings.get("loadRomNeedsFileError")); //OK
+					return null;
+				}
+			} else if (arg.equals("-maxticks")) {
+				if (i + 1 < args.length) {
+					i++;
+					try {
+						long value = Long.parseLong(args[i]);
+
+						if (value < 1) {
+							System.err.println(Strings.get("maxTicksBadArgError")); //OK
+							return null;
+						}
+
+						ret.maxTicks = value;
+					} catch (NumberFormatException e) {
+						System.err.println(Strings.get("maxTicksBadArgFmtError")); //OK
+						return null;
+					}
+				} else {
+					System.err.println(Strings.get("maxTicksNeedsArgError")); //OK
+					return null;
+				}
 			} else if (arg.equals("-empty")) {
 				if (ret.templFile != null || ret.templEmpty || ret.templPlain) {
 					System.err.println(Strings.get("argOneTemplateError")); //OK
@@ -430,6 +472,14 @@ public class Startup {
 			System.err.println(Strings.get("loadNeedsTtyError")); //OK
 			return null;
 		}
+		if (ret.romLoadFile != null && !ret.isTty) {
+			System.err.println(Strings.get("loadRomNeedsTtyError")); //OK
+			return null;
+		}
+		if (ret.maxTicks != -1 && !ret.isTty) {
+			System.err.println(Strings.get("maxTicksNeedsTtyError")); //OK
+			return null;
+		}
 		return ret;
 	}
 
@@ -443,6 +493,8 @@ public class Startup {
 		System.err.println("   " + Strings.get("argGatesOption")); //OK
 		System.err.println("   " + Strings.get("argHelpOption")); //OK
 		System.err.println("   " + Strings.get("argLoadOption")); //OK
+		System.err.println("   " + Strings.get("argLoadRomOption")); //OK
+		System.err.println("   " + Strings.get("argMaxTicksOption")); //OK
 		System.err.println("   " + Strings.get("argLocaleOption")); //OK
 		System.err.println("   " + Strings.get("argNoSplashOption")); //OK
 		System.err.println("   " + Strings.get("argPlainOption")); //OK

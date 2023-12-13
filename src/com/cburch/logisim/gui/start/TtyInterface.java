@@ -26,6 +26,7 @@ import com.cburch.logisim.proj.Project;
 import com.cburch.logisim.std.io.Keyboard;
 import com.cburch.logisim.std.io.Tty;
 import com.cburch.logisim.std.memory.Ram;
+import com.cburch.logisim.std.memory.Rom;
 import com.cburch.logisim.std.wiring.Pin;
 import com.cburch.logisim.tools.Library;
 import com.cburch.logisim.util.StringUtil;
@@ -106,8 +107,21 @@ public class TtyInterface {
 				System.exit(-1);
 			}
 		}
+		if (args.getRomLoadFile() != null) {
+			try {
+				boolean loaded = loadRom(circState, args.getRomLoadFile());
+				if (!loaded) {
+					System.err.println(Strings.get("loadNoRomError")); //OK
+					System.exit(-1);
+				}
+			} catch (IOException e) {
+				System.err.println(Strings.get("loadIoError") + ": " + e.toString()); //OK
+				System.exit(-1);
+			}
+		}
 		int ttyFormat = args.getTtyFormat();
-		int simCode = runSimulation(circState, outputPins, outputNames, haltPin, ttyFormat);
+		int simCode = runSimulation(circState, outputPins, outputNames, haltPin, args.getMaxTicks(),
+			ttyFormat);
 		System.exit(simCode);
 	}
 
@@ -171,6 +185,25 @@ public class TtyInterface {
 		return found;
 	}
 
+	private static boolean loadRom(CircuitState circState, File loadFile)
+			throws IOException {
+		if (loadFile == null) return false;
+
+		boolean found = false;
+		for (Component comp : circState.getCircuit().getNonWires()) {
+			if (comp.getFactory() instanceof Rom) {
+				Rom romFactory = (Rom) comp.getFactory();
+				InstanceState romState = circState.getInstanceState(comp);
+				romFactory.loadImage(romState, loadFile);
+				found = true;
+			}
+		}
+
+		// do NOT recurse into subcircuits, only load roms on main circuit.
+
+		return found;
+	}
+
 	private static boolean prepareForTty(CircuitState circState,
 			ArrayList<InstanceState> keybStates) {
 		boolean found = false;
@@ -194,7 +227,7 @@ public class TtyInterface {
 	}
 
 	private static int runSimulation(CircuitState circState, ArrayList<Instance> outputPins,
-			ArrayList<String> outputNames, Instance haltPin, int format) {
+			ArrayList<String> outputNames, Instance haltPin, long maxTicks, int format) {
 		boolean showTable = (format & FORMAT_TABLE) != 0;
 		boolean showSpeed = (format & FORMAT_SPEED) != 0;
 		boolean showTty = (format & FORMAT_TTY) != 0;
@@ -265,6 +298,10 @@ public class TtyInterface {
 				retCode = 1; // abnormal exit
 				break;
 			}
+			if (tickCount == maxTicks) {
+				retCode = 0; // normal exit
+				break;
+			}
 			if (keyboardStates != null) {
 				char[] buffer = stdinThread.getBuffer();
 				if (buffer != null) {
@@ -280,9 +317,15 @@ public class TtyInterface {
 		}
 		long elapse = System.currentTimeMillis() - start;
 		if (showTty) ensureLineTerminated();
+
+
 		if (showHalt || retCode != 0) {
 			if (retCode == 0) {
-				System.out.println(Strings.get("ttyHaltReasonPin")); //OK
+				if (tickCount == maxTicks) {
+					System.out.println(Strings.get("ttyHaltReasonMaxTicks")); //OK
+				} else {
+					System.out.println(Strings.get("ttyHaltReasonPin")); //OK
+				}
 			} else if (retCode == 1) {
 				System.out.println(Strings.get("ttyHaltReasonOscillation")); //OK
 			}
