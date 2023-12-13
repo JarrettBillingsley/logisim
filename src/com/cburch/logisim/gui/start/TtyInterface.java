@@ -38,19 +38,19 @@ public class TtyInterface {
 	public static final int FORMAT_STATISTICS = 16;
 
 	private static boolean lastIsNewline = true;
-	
+
 	public static void sendFromTty(char c) {
 		lastIsNewline = c == '\n';
 		System.out.print(c); //OK
 	}
-	
+
 	private static void ensureLineTerminated() {
 		if (!lastIsNewline) {
 			lastIsNewline = true;
 			System.out.print('\n'); //OK
 		}
 	}
-	
+
 	public static void run(Startup args) {
 		File fileToOpen = args.getFilesToOpen().get(0);
 		Loader loader = new Loader(null);
@@ -62,7 +62,7 @@ public class TtyInterface {
 			System.exit(-1);
 			return;
 		}
-		
+
 		int format = args.getTtyFormat();
 		if ((format & FORMAT_STATISTICS) != 0) {
 			format &= ~FORMAT_STATISTICS;
@@ -71,23 +71,25 @@ public class TtyInterface {
 		if (format == 0) { // no simulation remaining to perform, so just exit
 			System.exit(0);
 		}
-		
+
 		Project proj = new Project(file);
 		Circuit circuit = file.getMainCircuit();
 		Map<Instance, String> pinNames = Analyze.getPinLabels(circuit);
 		ArrayList<Instance> outputPins = new ArrayList<Instance>();
+		ArrayList<String> outputNames = new ArrayList<String>();
 		Instance haltPin = null;
 		for (Map.Entry<Instance, String> entry : pinNames.entrySet()) {
 			Instance pin = entry.getKey();
 			String pinName = entry.getValue();
 			if (!Pin.FACTORY.isInputPin(pin)) {
 				outputPins.add(pin);
+				outputNames.add(pinName);
 				if (pinName.equals("halt")) {
 					haltPin = pin;
 				}
 			}
 		}
-		
+
 		CircuitState circState = new CircuitState(proj, circuit);
 		// we have to do our initial propagation before the simulation starts -
 		// it's necessary to populate the circuit with substates.
@@ -105,10 +107,10 @@ public class TtyInterface {
 			}
 		}
 		int ttyFormat = args.getTtyFormat();
-		int simCode = runSimulation(circState, outputPins, haltPin, ttyFormat);
+		int simCode = runSimulation(circState, outputPins, outputNames, haltPin, ttyFormat);
 		System.exit(simCode);
 	}
-	
+
 	private static void displayStatistics(LogisimFile file) {
 		FileStatistics stats = FileStatistics.compute(file, file.getMainCircuit());
 		FileStatistics.Count total = stats.getTotalWithSubcircuits();
@@ -138,7 +140,7 @@ public class TtyInterface {
 				Integer.valueOf(total.getRecursiveCount()),
 				Strings.get("statsTotalWith"));
 	}
-	
+
 	private static int countDigits(int num) {
 		int digits = 1;
 		int lessThan = 10;
@@ -148,11 +150,11 @@ public class TtyInterface {
 		}
 		return digits;
 	}
-	
+
 	private static boolean loadRam(CircuitState circState, File loadFile)
 			throws IOException {
 		if (loadFile == null) return false;
-		
+
 		boolean found = false;
 		for (Component comp : circState.getCircuit().getNonWires()) {
 			if (comp.getFactory() instanceof Ram) {
@@ -162,13 +164,13 @@ public class TtyInterface {
 				found = true;
 			}
 		}
-		
+
 		for (CircuitState sub : circState.getSubstates()) {
 			found |= loadRam(sub, loadFile);
 		}
 		return found;
 	}
-	
+
 	private static boolean prepareForTty(CircuitState circState,
 			ArrayList<InstanceState> keybStates) {
 		boolean found = false;
@@ -184,20 +186,20 @@ public class TtyInterface {
 				found = true;
 			}
 		}
-		
+
 		for (CircuitState sub : circState.getSubstates()) {
 			found |= prepareForTty(sub, keybStates);
 		}
 		return found;
 	}
-	
-	private static int runSimulation(CircuitState circState,
-			ArrayList<Instance> outputPins, Instance haltPin, int format) {
+
+	private static int runSimulation(CircuitState circState, ArrayList<Instance> outputPins,
+			ArrayList<String> outputNames, Instance haltPin, int format) {
 		boolean showTable = (format & FORMAT_TABLE) != 0;
 		boolean showSpeed = (format & FORMAT_SPEED) != 0;
 		boolean showTty = (format & FORMAT_TTY) != 0;
 		boolean showHalt = (format & FORMAT_HALT) != 0;
-		
+
 		ArrayList<InstanceState> keyboardStates = null;
 		StdinThread stdinThread = null;
 		if (showTty) {
@@ -213,6 +215,25 @@ public class TtyInterface {
 				stdinThread = new StdinThread();
 				stdinThread.start();
 			}
+		}
+
+		// Show output names as the first output row
+		if (showTable) {
+			boolean first = true;
+
+			for (String name : outputNames) {
+				if (!name.equals("halt")) {
+					if (first) {
+						first = false;
+					} else {
+						System.out.print("\t"); //OK
+					}
+
+					System.out.print(name); //OK
+				}
+			}
+
+			System.out.println(); //OK
 		}
 
 		int retCode;
@@ -235,7 +256,7 @@ public class TtyInterface {
 			if (showTable) {
 				displayTableRow(prevOutputs, curOutputs);
 			}
-			
+
 			if (halted) {
 				retCode = 0; // normal exit
 				break;
@@ -271,7 +292,7 @@ public class TtyInterface {
 		}
 		return retCode;
 	}
-	
+
 	private static void displayTableRow(ArrayList<Value> prevOutputs,
 			ArrayList<Value> curOutputs) {
 		boolean shouldPrint = false;
@@ -295,7 +316,7 @@ public class TtyInterface {
 			System.out.println(); //OK
 		}
 	}
-	
+
 	private static void displaySpeed(long tickCount, long elapse) {
 		double hertz = (double) tickCount / elapse * 1000.0;
 		double precision;
@@ -315,11 +336,11 @@ public class TtyInterface {
 	// is not interactively echoed until System.in.read() is invoked.
 	private static class StdinThread extends Thread {
 		private LinkedList<char[]> queue; // of char[]
-		
+
 		public StdinThread() {
 			queue = new LinkedList<char[]>();
 		}
-		
+
 		public char[] getBuffer() {
 			synchronized (queue) {
 				if (queue.isEmpty()) {
@@ -329,7 +350,7 @@ public class TtyInterface {
 				}
 			}
 		}
-		
+
 		@Override
 		public void run() {
 			InputStreamReader stdin = new InputStreamReader(System.in);
