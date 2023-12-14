@@ -102,6 +102,10 @@ public class TtyInterface {
 					System.err.println(Strings.get("loadNoRamError")); //OK
 					System.exit(-1);
 				}
+
+				// re-propagate after changing RAM contents to avoid stale values from what
+				// was in the RAM when the circuit was loaded
+				circState.getPropagator().propagate();
 			} catch (IOException e) {
 				System.err.println(Strings.get("loadIoError") + ": " + e.toString()); //OK
 				System.exit(-1);
@@ -114,6 +118,10 @@ public class TtyInterface {
 					System.err.println(Strings.get("loadNoRomError")); //OK
 					System.exit(-1);
 				}
+
+				// re-propagate after changing ROM contents to avoid stale values from what
+				// was in the ROM when the circuit was loaded
+				circState.getPropagator().propagate();
 			} catch (IOException e) {
 				System.err.println(Strings.get("loadIoError") + ": " + e.toString()); //OK
 				System.exit(-1);

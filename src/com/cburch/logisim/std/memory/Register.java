@@ -83,7 +83,16 @@ public class Register extends InstanceFactory {
 		// } else
 		if (triggered && state.getPort(EN) != Value.FALSE) {
 			Value in = state.getPort(IN);
-			if (in.isFullyDefined()) data.value = in.toIntValue();
+			if (in.isFullyDefined()) {
+				int newValue = in.toIntValue();
+				data.value = newValue;
+
+				// if(newValue != data.value) {
+				// 	String label = state.getAttributeValue(StdAttr.LABEL);
+				// 	System.out.printf("register '%s' updated to %04x\n", label, newValue);
+				// 	data.value = newValue;
+				// }
+			}
 		}
 
 		state.setPort(OUT, Value.createKnown(dataWidth, data.value), DELAY);
